@@ -1,15 +1,10 @@
 import './style.css'
+import {Navbar} from './components/Navbar'
+
 
 document.querySelector('#app').innerHTML = `
 
-<nav>
-  <div>
-    <h1>选项</h1>
-  </div>
-  <div>
-    <h1>xuanxiang</h1>
-  </div>
-</nav>
+${Navbar()}
 
 <div class = "workspace">
   <aside class = "file_area">

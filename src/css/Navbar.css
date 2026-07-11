@@ -1,0 +1,17 @@
+
+nav{
+  text-align: center;
+  background-color: #FFFFFF;
+  color: black;
+  height: 64px;
+  border-bottom: 1px solid #E5E7EB;
+  padding:0 24px;
+}
+
+nav div{
+  float: left;
+}
+
+nav h1{
+  font-size: medium
+}
