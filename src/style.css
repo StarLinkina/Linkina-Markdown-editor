@@ -1,5 +1,5 @@
 :root{
-  background-color: white;
+  background-color: #F7F8FA;
 }
 
 *{
@@ -7,11 +7,19 @@
   padding: 0;
 }
 
+#app{
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 nav{
   text-align: center;
-  background-color: darkgrey;
+  background-color: #FFFFFF;
   color: black;
-  height: min-content;
+  height: 64px;
+  border-bottom: 1px solid #E5E7EB;
+  padding:0 24px;
 }
 
 nav div{
@@ -22,7 +30,28 @@ nav h1{
   font-size: medium
 }
 
-div.file_area{
-  width: 500px;
-  background-color: darkgrey;
+.workspace{
+  display: flex;
+  flex: 1;
+}
+
+.file_area{
+  width: 260px;
+  background-color: #FFFFFF;
+  border-right: 1px solid #E5E7EB;
+  padding: 20px;
+}
+
+.edit_area{
+  flex: 1;
+  background-color: #FFFFFF;
+  padding:32px;
+  font-size: 16px;
+}
+
+.extend_area{
+  width: 400px;
+  background-color: #FCFCFC;
+  border-left: 1px solid #E5E7EB;
+  padding: 32px;
 }
