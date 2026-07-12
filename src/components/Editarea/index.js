@@ -1,0 +1,1 @@
+export {Editarea} from "./Editarea.js"
