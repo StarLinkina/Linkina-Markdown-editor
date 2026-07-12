@@ -1,0 +1,29 @@
+.btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    height: 32px;
+    padding:5px 10px;
+
+    border:none;
+
+    background:#4F46E5;
+    color:black;
+
+    cursor:pointer;
+}
+
+.btn:hover{
+    background:#4338CA;
+}
+
+.btn:active{
+    transform:scale(0.97);
+}
+
+.icon{
+    width: 20px;
+    height: 20px;
+}
