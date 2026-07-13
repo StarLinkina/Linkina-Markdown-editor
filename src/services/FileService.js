@@ -6,6 +6,10 @@ export function AddFile(title) {
     files.push(file);
 }
 
-export function DeleteFilet() {
+export function DeleteFile() {
+    
+}
+
+export function ImportFile() {
     
 }

@@ -2,16 +2,18 @@ import "./Filearea.css";
 
 import { Button } from "../Button";
 import { AddFile } from "../../services/FileService";
+import { FileItem } from "../Fileitem";
 
 import new_file from "../../assets/new_file/file-plus.svg";
 import save_file from "../../assets/save_file/save.svg";
 import import_file from "../../assets/import_file/import.svg";
 
 
-export function Filearea() {
+export function Filearea(files) {
     const filearea = document.createElement("aside");
     filearea.className = "file_area";
 
+    //文件功能导航栏
     const filenavbar = document.createElement("nav");
     filenavbar.className = "filenavbar";
 
@@ -22,6 +24,7 @@ export function Filearea() {
         const title = prompt("请输入笔记标题");
         if (!title) return;
         AddFile(title);
+        render(files);
     });
     
     //保存文件
@@ -34,10 +37,25 @@ export function Filearea() {
 
     filearea.append(filenavbar);
 
-    const text = document.createElement("h1");
-    text.textContent = "test";
+    // 文件展示列表
+    const filedisplay = document.createElement("div");
+    filedisplay.className = "file_display";
+    files.forEach(file => {
+        filedisplay.append(FileItem(file));
+    });
 
-    filearea.append(text);
+    //重新渲染filedisplay
+    function render(files){
+        filedisplay.replaceChildren();
+        files.forEach(file => {
+            filedisplay.append(FileItem(file));
+        });
+    }
 
-    return filearea;
+    filearea.append(filedisplay);
+
+    return{
+        element: filearea,
+        render
+    }
 }

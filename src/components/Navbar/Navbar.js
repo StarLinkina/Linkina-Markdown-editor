@@ -1,8 +1,6 @@
 import { Button } from "../Button";
 import "./Navbar.css";
 
-import { AddFile } from "../../services/FileService";
-
 import panel_left_close from "../../assets/left-sidebar/panel-left-close.svg";
 import panel_left_open from "../../assets/left-sidebar/panel-left-open.svg";
 import panel_right_close from "../../assets/right-sidebar/panel-right-close.svg";
