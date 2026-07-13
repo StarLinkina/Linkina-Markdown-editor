@@ -34,6 +34,7 @@ export function Filearea(files) {
     //外部导入文件
     const import_file_button = Button({image: import_file, alt: "导入文件"});
     filenavbar.append(import_file_button);
+    
 
     filearea.append(filenavbar);
 
