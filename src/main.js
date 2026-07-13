@@ -6,6 +6,4 @@ const app = document.querySelector('#app');
 
 app.append(Navbar());
 
-
-
 app.append(Workspace());

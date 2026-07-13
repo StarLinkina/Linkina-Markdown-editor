@@ -2,5 +2,15 @@
   width: 260px;
   background-color: #FFFFFF;
   border-right: 1px solid #E5E7EB;
-  padding: 20px;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+}
+
+.filenavbar{
+  display: flex;
+  background-color: #FFFFFF;
+  height: 32px;
+  border-bottom: 1px solid #E5E7EB;
+
 }

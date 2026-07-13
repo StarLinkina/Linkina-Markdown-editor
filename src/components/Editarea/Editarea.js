@@ -3,8 +3,8 @@ import "./Editarea.css";
 
 export function Editarea() {
 
-    const Editarea = document.createElement("main");
-    Editarea.className = "edit_area";
+    const editarea = document.createElement("main");
+    editarea.className = "edit_area";
 
-    return Editarea;
+    return editarea;
 }

@@ -6,12 +6,12 @@ import {Extendarea} from "../Extendarea";
 
 export function Workspace() {
     
-    const Workspace = document.createElement("div");
-    Workspace.className = "workspace";
+    const workspace = document.createElement("div");
+    workspace.className = "workspace";
 
-    Workspace.append(Filearea());
-    Workspace.append(Editarea());
-    Workspace.append(Extendarea());
+    workspace.append(Filearea());
+    workspace.append(Editarea());
+    workspace.append(Extendarea());
 
-    return Workspace;
+    return workspace;
 }
