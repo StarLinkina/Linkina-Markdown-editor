@@ -1,4 +1,4 @@
-import { files } from "../state.js";
+import { files, currentNoteId } from "../state.js";
 import { CreateFile } from "../models/file.js";
 
 export function AddFile(title) {
@@ -12,4 +12,10 @@ export function DeleteFile() {
 
 export function ImportFile() {
     
+}
+
+export function selectNote(id){
+
+    currentNoteId = id;
+
 }

@@ -9,7 +9,7 @@ import save_file from "../../assets/save_file/save.svg";
 import import_file from "../../assets/import_file/import.svg";
 
 
-export function Filearea(files) {
+export function Filearea(files, onSelect) {
     const filearea = document.createElement("aside");
     filearea.className = "file_area";
 
@@ -49,7 +49,7 @@ export function Filearea(files) {
     function render(files){
         filedisplay.replaceChildren();
         files.forEach(file => {
-            filedisplay.append(FileItem(file));
+            filedisplay.append(FileItem(file, onSelect));
         });
     }
 
