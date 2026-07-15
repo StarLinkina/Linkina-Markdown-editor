@@ -7,7 +7,7 @@
   flex-direction: column;
 }
 
-.filenavbar{
+.file_toolbar{
   display: flex;
   background-color: #FFFFFF;
   height: 32px;
