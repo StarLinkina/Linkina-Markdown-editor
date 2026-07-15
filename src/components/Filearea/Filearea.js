@@ -15,14 +15,30 @@ export function Filearea(files, {onSelect, onCreate, onDelete, onImport, onExpor
     //文件功能导航栏
     const file_toolbar = document.createElement("nav");
     file_toolbar.className = "file_toolbar";
+
     //新建文件按钮
     const create_file_button = Button({image: new_file, alt: "新建文件"});
     file_toolbar.append(create_file_button);
     create_file_button.addEventListener("click", () => {onCreate()});
+
+    //隐藏的文件输入框
+    const file_input = document.createElement("input");
+    file_input.type = "file"; //input类型为文件
+    file_input.accept = ".md,.markdown,text/markdown,text/plain" //接受格式
+    file_input.hidden = true; //隐藏
+    file_area.append(file_input);
+    //添加方法
+    file_input.addEventListener("change", async () => {
+        const [file] = file_input.files;
+        if (!file) return;
+        await onImport(file);
+        file_input.value = "";
+    });
+    
     //外部导入文件按钮
     const import_file_button = Button({image: import_file, alt: "导入文件"});
     file_toolbar.append(import_file_button);
-    import_file_button.addEventListener("click", () => {onImport()})
+    import_file_button.addEventListener("click", () => {file_input.click();})
     file_area.append(file_toolbar);
 
     // 文件展示列表

@@ -1,6 +1,6 @@
 import "./Workspace.css";
 
-import { SelectFile, AddFile, UpdateFile, DeleteFile } from "../../services/FileService.js";
+import { SelectFile, AddFile, UpdateFile, DeleteFile, ImportFile } from "../../services/FileService.js";
 
 import {files, currentFileId} from "../../state.js";
 import {Filearea} from "../Filearea";
@@ -34,8 +34,9 @@ export function Workspace() {
     function handleCreateFile() {
         const title = prompt("请输入笔记标题");
         if (!title) return;
-        AddFile(title);
+        const file = AddFile(title);
         file_area.render(files);
+        handleSelectFile(file);
     }
     //删除文件
     function handleDeleteFile(id) {
@@ -43,9 +44,13 @@ export function Workspace() {
         file_area.render(files);
     }
     //外部导入文件
-    function handleImportFile() {
-        
+    async function handleImportFile(sourcefile) {
+        //异步的，读取sourcefile的内容
+        const content = await sourcefile.text();
+        //使用导入业务导入这个文件
+        const file = ImportFile(sourcefile.name, content);
         file_area.render(files);
+        handleSelectFile(file);
     }
     //导出文件
     function handleExportFile(id) {
