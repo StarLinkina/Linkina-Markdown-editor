@@ -1,4 +1,7 @@
 export let files = [];
 
-export let currentNoteId = null;
+export let currentFileId = null;
 
+export function SetCurrentFileId(id) {
+    currentFileId = id;
+}

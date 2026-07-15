@@ -1,4 +1,4 @@
-import { files, currentNoteId } from "../state.js";
+import { files, SetCurrentFileId } from "../state.js";
 import { CreateFile } from "../models/file.js";
 
 export function AddFile(title) {
@@ -14,8 +14,13 @@ export function ImportFile() {
     
 }
 
-export function selectNote(id){
+export function SelectFile(id){
+    SetCurrentFileId(id);
+}
 
-    currentNoteId = id;
+export function UpdateFile(id, content) {
+    const file = files.find(file => file.id === id);
 
+    file.content = content;
+    file.updateTime = new Date().toISOString();
 }

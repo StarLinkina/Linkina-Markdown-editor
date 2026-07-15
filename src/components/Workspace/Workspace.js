@@ -1,8 +1,8 @@
 import "./Workspace.css";
 
-import { selectNote } from "../../services/FileService.js";
+import { SelectFile, UpdateFile } from "../../services/FileService.js";
 
-import {files} from "../../state.js";
+import {files, currentFileId} from "../../state.js";
 import {Filearea} from "../Filearea";
 import {Editarea} from "../Editarea";
 import {Extendarea} from "../Extendarea";
@@ -13,11 +13,17 @@ export function Workspace() {
     workspace.className = "workspace";
 
     const fileArea = Filearea(files, handleSelectFile);
-    const editArea = Editarea();
+    const editArea = Editarea(handleContentChange);
 
+    //选择更新页面内容
     function handleSelectFile(file){
-        selectNote(file.id);
+        SelectFile(file.id);
         editArea.render(file);
+    }
+
+    //更新页面内容改变file内容
+    function handleContentChange(content) {
+        UpdateFile(currentFileId, content);
     }
 
     workspace.append(fileArea.element);

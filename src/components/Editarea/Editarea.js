@@ -1,18 +1,21 @@
 import "./Editarea.css";
 
 
-export function Editarea() {
+export function Editarea(onContentChange) {
 
     const editarea = document.createElement("main");
     editarea.className = "edit_area";
+
     const textarea = document.createElement("textarea");
     textarea.className = "text_area";
 
+    textarea.addEventListener("input", () => {
+        onContentChange(textarea.value);
+    });
+    
     editarea.append(textarea);
     function render(file){
-        editarea.replaceChildren();
         textarea.value = file.content;
-        editarea.append(textarea);
     }
 
     return{
