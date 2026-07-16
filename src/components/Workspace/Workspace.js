@@ -32,7 +32,7 @@ export function Workspace() {
     }
     //添加文件
     function handleCreateFile() {
-        const title = prompt("请输入笔记标题");
+        const title = prompt("请输入笔记标题")?.trim(); //防止文件名为" "的文件存在
         if (!title) return;
         const file = AddFile(title);
         file_area.render(files);
@@ -40,8 +40,17 @@ export function Workspace() {
     }
     //删除文件
     function handleDeleteFile(id) {
+        const isCurrentFile = currentFileId === id; //检测删除的文件是否是当前打开的文件
+
+        //删除且重载
         DeleteFile(id);
         file_area.render(files);
+
+        //若是当前打开的文件
+        if (isCurrentFile) {
+            SelectFile(null); //设置现在状态为未选中文件
+            edit_area.render(null); //重载编辑区
+        }
     }
     //外部导入文件
     async function handleImportFile(sourcefile) {
@@ -54,7 +63,23 @@ export function Workspace() {
     }
     //导出文件
     function handleExportFile(id) {
-        
+        //找文件
+        const file = files.find(file => file.id === id);
+        if (!file) return;
+        //创建blob对象
+        const blob = new Blob([file.content], {type: "text/markdown;charset=utf-8"});
+        //创建临时下载url
+        const url = URL.createObjectURL(blob);
+        //创建a组件用于下载，并将url绑定在a上
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${file.title || "未命名笔记"}.md`;
+        //加上link
+        document.body.append(link);
+        link.click();
+        link.remove(); //再去掉link
+        //用完需移除url，防止占用太多内存
+        URL.revokeObjectURL(url);
     }
 
     //创建edit_area组件，并传入相关业务作为参数

@@ -31,8 +31,11 @@ export function Filearea(files, {onSelect, onCreate, onDelete, onImport, onExpor
     file_input.addEventListener("change", async () => {
         const [file] = file_input.files;
         if (!file) return;
-        await onImport(file);
-        file_input.value = "";
+        try{
+            await onImport(file);
+        }finally{
+            file_input.value = "";
+        }
     });
     
     //外部导入文件按钮
