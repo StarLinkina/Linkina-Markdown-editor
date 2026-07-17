@@ -1,0 +1,1 @@
+export { Documentarea } from "./Documentarea.js";

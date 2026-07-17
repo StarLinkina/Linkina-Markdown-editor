@@ -4,7 +4,7 @@ import { SelectFile, AddFile, UpdateFile, DeleteFile, ImportFile } from "../../s
 
 import {files, currentFileId} from "../../state.js";
 import {Filearea} from "../Filearea";
-import {Editarea} from "../Editarea";
+import {Documentarea} from "../Documentarea";
 import {Extendarea} from "../Extendarea";
 
 export function Workspace() {
@@ -28,7 +28,7 @@ export function Workspace() {
     //选择更新页面内容
     function handleSelectFile(file){
         SelectFile(file.id);
-        edit_area.render(file);
+        document_area.render(file);
     }
     //添加文件
     function handleCreateFile() {
@@ -49,7 +49,7 @@ export function Workspace() {
         //若是当前打开的文件
         if (isCurrentFile) {
             SelectFile(null); //设置现在状态为未选中文件
-            edit_area.render(null); //重载编辑区
+            document_area.clear(); //重载编辑区
         }
     }
     //外部导入文件
@@ -82,11 +82,14 @@ export function Workspace() {
         URL.revokeObjectURL(url);
     }
 
-    //创建edit_area组件，并传入相关业务作为参数
-    const edit_area = Editarea(handleContentChange);
-    work_space.append(edit_area.element);
+    //创建document_area组件，并传入相关业务作为参数
+    const document_area = Documentarea({
+        onContentChange: handleContentChange
+    });
 
-    //以下是editarea相关业务
+    work_space.append(document_area.element);
+
+    //以下是document_area相关业务
     //更新页面内容改变file内容
     function handleContentChange(content) {
         UpdateFile(currentFileId, content);
