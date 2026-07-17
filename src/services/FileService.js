@@ -1,4 +1,5 @@
 import { files, SetCurrentFileId } from "../state.js";
+import { savefiles } from "../utils/storage.js";
 import { CreateFile } from "../models/file.js";
 
 export function AddFile(title) {
@@ -6,7 +7,7 @@ export function AddFile(title) {
     const file = CreateFile(title);
     //压入files数组
     files.push(file);
-
+    savefiles(files); //进行localstorage
     return file;
 }
 
@@ -17,6 +18,7 @@ export function DeleteFile(id) {
 
     //使用splice切除，可改变长度
     files.splice(index, 1);
+    savefiles(files);
 }
 
 export function ImportFile(name, content) {
@@ -27,7 +29,7 @@ export function ImportFile(name, content) {
     file.content = content;
     //压入files数组
     files.push(file);
-
+    savefiles(files);
     return file;
 }
 
@@ -43,4 +45,6 @@ export function UpdateFile(id, content) {
     //更新file内容
     file.content = content;
     file.updateTime = new Date().toISOString();
+
+    savefiles(files);
 }
