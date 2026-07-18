@@ -1,9 +1,9 @@
-import './style.css'
-import {Navbar} from './components/Navbar'
-import {Workspace} from "./components/Workspace";
+import "./style.css";
+import { createNavbar } from "./components/Navbar";
+import { createWorkspace } from "./components/Workspace";
 
-const app = document.querySelector('#app');
+const appElement = document.querySelector("#app");
 
-app.append(Navbar());
+appElement.append(createNavbar());
 
-app.append(Workspace());
+appElement.append(createWorkspace());

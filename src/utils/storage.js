@@ -1,24 +1,24 @@
 const STORAGE_KEY = "MARKDOWN-FILES";
 
-//进行localstorage，长期化存储
-export function savefiles(files) {
+// 将 Markdown 文件列表持久化到 localStorage
+export function saveFiles(markdownFiles) {
     localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify(files) //JSON转换成字符串格式
-    );    
+        JSON.stringify(markdownFiles)
+    );
 }
 
-export function loadfiles() {
-    const data = localStorage.getItem(STORAGE_KEY); //先取出localstorage的数据
+export function loadFiles() {
+    const data = localStorage.getItem(STORAGE_KEY);
 
-    if(!data){
+    if (!data) {
         return [];
     }
 
-    try{
-        const files = JSON.parse(data); //JSON转化成数组
-        return Array.isArray(files) ? files: [];
-    } catch(error){
+    try {
+        const storedFiles = JSON.parse(data);
+        return Array.isArray(storedFiles) ? storedFiles : [];
+    } catch (error) {
         console.error("加载文件失败", error);
         return [];
     }

@@ -1,20 +1,20 @@
-import "./Button.css"
+import "./Button.css";
 
-export function Button(option) {
-    const button = document.createElement("button");
-    button.className = "btn";
-    
-    if(option.text) {
-        button.textContent = option.text;
+export function createButton(options) {
+    const buttonElement = document.createElement("button");
+    buttonElement.className = "button";
+
+    if (options.text) {
+        buttonElement.textContent = options.text;
     }
 
-    if(option.image) {
-        const icon = document.createElement("img");
-        icon.className = "icon";
-        icon.src = option.image;
-        icon.alt = option.alt ?? "";
-        button.append(icon);
+    if (options.image) {
+        const iconElement = document.createElement("img");
+        iconElement.className = "button__icon";
+        iconElement.src = options.image;
+        iconElement.alt = options.alt ?? "";
+        buttonElement.append(iconElement);
     }
 
-    return button;
+    return buttonElement;
 }

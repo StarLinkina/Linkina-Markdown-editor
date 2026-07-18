@@ -1,108 +1,94 @@
 import "./Workspace.css";
 
-import { SelectFile, AddFile, UpdateFile, DeleteFile, ImportFile } from "../../services/FileService.js";
+import { selectFile, addFile, updateFile, deleteFile, importFile } from "../../services/fileService.js";
 
-import {files, currentFileId} from "../../state.js";
-import {Filearea} from "../Filearea";
-import {Documentarea} from "../Documentarea";
-import {Extendarea} from "../Extendarea";
+import { markdownFiles, currentFileId } from "../../state.js";
+import { createFileArea } from "../FileArea";
+import { createDocumentArea } from "../DocumentArea";
+import { createExtendArea } from "../ExtendArea";
 
-export function Workspace() {
-    
-    //创建workspace组件作为整体容器
-    const work_space = document.createElement("div");
-    work_space.className = "work_space";
+export function createWorkspace() {
+    // 创建工作区组件作为整体容器
+    const workspaceElement = document.createElement("div");
+    workspaceElement.className = "workspace";
 
-    //创建fileArea组件，传入files和业务函数作为参数
-    const file_area = Filearea(files, {
-        onSelect: handleSelectFile, 
-        onCreate: handleCreateFile, 
-        onDelete: handleDeleteFile, 
-        onImport: handleImportFile, 
-        onExport: handleExportFile
+    // 创建文件区组件，传入 Markdown 文件列表和业务函数
+    const fileArea = createFileArea(markdownFiles, {
+        onSelect: handleFileSelect,
+        onCreate: handleFileCreate,
+        onDelete: handleFileDelete,
+        onImport: handleFileImport,
+        onExport: handleFileExport
     });
-    work_space.append(file_area.element);
+    workspaceElement.append(fileArea.element);
 
 
-    //以下是filearea相关业务
-    //选择更新页面内容
-    function handleSelectFile(file){
-        SelectFile(file.id);
-        document_area.render(file);
+    // 以下是文件区相关业务
+    // 选择文件并更新页面内容
+    function handleFileSelect(markdownFile) {
+        selectFile(markdownFile.id);
+        documentArea.render(markdownFile);
     }
-    //添加文件
-    function handleCreateFile() {
-        const title = prompt("请输入笔记标题")?.trim(); //防止文件名为" "的文件存在
+    // 添加文件
+    function handleFileCreate() {
+        const title = prompt("请输入笔记标题")?.trim();
         if (!title) return;
-        const file = AddFile(title);
-        file_area.render(files);
-        handleSelectFile(file);
+        const markdownFile = addFile(title);
+        fileArea.render(markdownFiles);
+        handleFileSelect(markdownFile);
     }
-    //删除文件
-    function handleDeleteFile(id) {
-        const isCurrentFile = currentFileId === id; //检测删除的文件是否是当前打开的文件
+    // 删除文件
+    function handleFileDelete(id) {
+        const isCurrentFile = currentFileId === id;
 
-        //删除且重载
-        DeleteFile(id);
-        file_area.render(files);
+        // 删除并重新渲染文件列表
+        deleteFile(id);
+        fileArea.render(markdownFiles);
 
-        //若是当前打开的文件
+        // 如果删除的是当前文件，则清空选中状态和编辑区
         if (isCurrentFile) {
-            SelectFile(null); //设置现在状态为未选中文件
-            document_area.clear(); //重载编辑区
+            selectFile(null);
+            documentArea.clear();
         }
     }
-    //外部导入文件
-    async function handleImportFile(sourcefile) {
-        //异步的，读取sourcefile的内容
-        const content = await sourcefile.text();
-        //使用导入业务导入这个文件
-        const file = ImportFile(sourcefile.name, content);
-        file_area.render(files);
-        handleSelectFile(file);
+
+    // 从浏览器 File 对象导入文件
+    async function handleFileImport(sourceFile) {
+        const content = await sourceFile.text();
+        const markdownFile = importFile(sourceFile.name, content);
+        fileArea.render(markdownFiles);
+        handleFileSelect(markdownFile);
     }
-    //导出文件
-    function handleExportFile(id) {
-        //找文件
-        const file = files.find(file => file.id === id);
-        if (!file) return;
-        //创建blob对象
-        const blob = new Blob([file.content], {type: "text/markdown;charset=utf-8"});
-        //创建临时下载url
+
+    // 导出 Markdown 文件
+    function handleFileExport(id) {
+        const markdownFile = markdownFiles.find(markdownFile => markdownFile.id === id);
+        if (!markdownFile) return;
+
+        const blob = new Blob([markdownFile.content], { type: "text/markdown;charset=utf-8" });
         const url = URL.createObjectURL(blob);
-        //创建a组件用于下载，并将url绑定在a上
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${file.title || "未命名笔记"}.md`;
-        //加上link
+        link.download = `${markdownFile.title || "未命名笔记"}.md`;
         document.body.append(link);
         link.click();
-        link.remove(); //再去掉link
-        //用完需移除url，防止占用太多内存
+        link.remove();
         URL.revokeObjectURL(url);
     }
 
-    //创建document_area组件，并传入相关业务作为参数
-    const document_area = Documentarea({
+    // 创建文档区组件并传入内容更新业务
+    const documentArea = createDocumentArea({
         onContentChange: handleContentChange
     });
 
-    work_space.append(document_area.element);
+    workspaceElement.append(documentArea.element);
 
-    //以下是document_area相关业务
-    //更新页面内容改变file内容
+    // 以下是文档区域相关业务
+    // 更新当前 Markdown 文件的内容
     function handleContentChange(content) {
-        UpdateFile(currentFileId, content);
+        updateFile(currentFileId, content);
     }
+    workspaceElement.append(createExtendArea());
 
-    
-
-
-
-    
-
-
-    work_space.append(Extendarea());
-
-    return work_space;
+    return workspaceElement;
 }

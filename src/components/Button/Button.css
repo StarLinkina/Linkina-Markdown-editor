@@ -1,29 +1,29 @@
-.btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
     height: 32px;
-    padding:5px 10px;
+    padding: 5px 10px;
 
-    border: 0px;
+    border: 0;
 
-    background:#4F46E5;
-    color:black;
+    background: #4f46e5;
+    color: black;
 
-    cursor:pointer;
+    cursor: pointer;
 }
 
-.btn:hover{
-    background:#4338CA;
+.button:hover {
+    background: #4338ca;
 }
 
-.btn:active{
-    transform:scale(0.97);
+.button:active {
+    transform: scale(0.97);
 }
 
-.icon{
+.button__icon {
     width: 20px;
     height: 20px;
 }

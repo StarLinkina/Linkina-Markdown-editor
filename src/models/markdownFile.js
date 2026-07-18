@@ -1,6 +1,6 @@
-//创建file的函数，规范了file的数据结构
-export function CreateFile(title) {
-    return{
+// 创建 Markdown 文件，统一其数据结构
+export function createMarkdownFile(title) {
+    return {
         id: Date.now(),
         title,
         content: "",

@@ -1,0 +1,15 @@
+.file-area {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-toolbar {
+    display: flex;
+    background-color: #ffffff;
+    height: 32px;
+    border-bottom: 1px solid #e5e7eb;
+}

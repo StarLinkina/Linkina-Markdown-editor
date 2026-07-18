@@ -1,15 +1,14 @@
-:root{
-  background-color: #F7F8FA;
+:root {
+    background-color: #f7f8fa;
 }
 
-*{
-  margin: 0;
-  padding: 0;
+* {
+    margin: 0;
+    padding: 0;
 }
 
-#app{
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+#app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-

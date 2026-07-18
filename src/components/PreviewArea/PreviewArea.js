@@ -1,11 +1,11 @@
-import "./Previewarea.css";
+import "./PreviewArea.css";
 
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
-export function Previewarea() {
-    const preview_area = document.createElement("div");
-    preview_area.className = "preview_area";
+export function createPreviewArea() {
+    const previewAreaElement = document.createElement("div");
+    previewAreaElement.className = "preview-area";
 
     function render(content = "") {
         //取出content中的零宽字符
@@ -19,11 +19,11 @@ export function Previewarea() {
             breaks: true //在分段之间加上<br>
         });
         //使用dompurify去除可能的危险字段
-        preview_area.innerHTML = DOMPurify.sanitize(html);
+        previewAreaElement.innerHTML = DOMPurify.sanitize(html);
     }
 
-    return{
-        element: preview_area,
+    return {
+        element: previewAreaElement,
         render
-    }
+    };
 }

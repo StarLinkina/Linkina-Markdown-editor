@@ -1,9 +1,9 @@
-import { loadfiles } from "./utils/storage.js";
+import { loadFiles } from "./utils/storage.js";
 
-export let files = loadfiles();
+export const markdownFiles = loadFiles();
 
 export let currentFileId = null;
 
-export function SetCurrentFileId(id) {
+export function setCurrentFileId(id) {
     currentFileId = id;
 }

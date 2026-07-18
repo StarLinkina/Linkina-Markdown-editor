@@ -1,1 +1,1 @@
-export {Workspace} from "./Workspace.js"
+export { createWorkspace } from "./Workspace.js";
