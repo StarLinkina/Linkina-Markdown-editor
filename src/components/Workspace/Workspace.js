@@ -81,6 +81,8 @@ export function createWorkspace() {
         onContentChange: handleContentChange
     });
 
+    documentArea.clear();
+
     workspaceElement.append(documentArea.element);
 
     // 以下是文档区域相关业务

@@ -4,7 +4,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 export function createPreviewArea() {
-    const previewAreaElement = document.createElement("div");
+    const previewAreaElement = document.createElement("article");
     previewAreaElement.className = "preview-area";
 
     function render(content = "") {

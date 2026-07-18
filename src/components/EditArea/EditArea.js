@@ -2,7 +2,7 @@ import "./EditArea.css";
 
 export function createEditArea(onContentChange) {
     // 最外部的编辑区容器
-    const editAreaElement = document.createElement("main");
+    const editAreaElement = document.createElement("section");
     editAreaElement.className = "edit-area";
 
     // 编辑区文本框

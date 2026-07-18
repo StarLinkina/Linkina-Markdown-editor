@@ -88,6 +88,7 @@ export function createDocumentArea({ onContentChange }) {
     }
 
     function clear() {
+        mode = "edit";
         render(null);
     }
 
