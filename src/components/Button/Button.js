@@ -5,12 +5,17 @@ export function createButton(options) {
     buttonElement.className = "button";
 
     if (options.text) {
+        buttonElement.classList.add("text-button");
         buttonElement.textContent = options.text;
+    } else if (options.image) {
+        buttonElement.classList.add("icon-button");
+        buttonElement.setAttribute("aria-label", options.alt ?? "");
+        buttonElement.title = options.alt ?? "";
     }
 
     if (options.image) {
         const iconElement = document.createElement("img");
-        iconElement.className = "button__icon";
+        iconElement.className = "button-icon";
         iconElement.src = options.image;
         iconElement.alt = options.alt ?? "";
         buttonElement.append(iconElement);

@@ -5,6 +5,7 @@ import { createPreviewArea } from "../PreviewArea";
 import { createButton } from "../Button";
 
 export function createDocumentArea({ onContentChange }) {
+
     const documentAreaElement = document.createElement("main");
     documentAreaElement.className = "document-area";
 
@@ -92,6 +93,7 @@ export function createDocumentArea({ onContentChange }) {
         render(null);
     }
 
+    render(null);
     return {
         element: documentAreaElement,
         render,

@@ -1,4 +1,22 @@
 .workspace {
-    display: flex;
-    flex: 1;
+    width: 100%;
+    
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+
+    display: grid;
+    grid-template-columns:
+        var(--file-area-width)
+        minmax(0, 1fr)
+        var(--extend-area-width);
+
+    grid-template-rows: minmax(0, 1fr);
+
+    overflow: hidden;
+}
+
+.work_space > * {
+  min-width: 0;
+  min-height: 0;
 }

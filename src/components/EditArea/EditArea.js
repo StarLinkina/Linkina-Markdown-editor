@@ -7,7 +7,7 @@ export function createEditArea(onContentChange) {
 
     // 编辑区文本框
     const textareaElement = document.createElement("textarea");
-    textareaElement.className = "edit-area__textarea";
+    textareaElement.className = "edit-area-textarea";
     textareaElement.disabled = true; // 初始渲染不可编辑
     editAreaElement.append(textareaElement);
 

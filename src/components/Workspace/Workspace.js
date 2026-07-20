@@ -8,11 +8,11 @@ import { createDocumentArea } from "../DocumentArea";
 import { createExtendArea } from "../ExtendArea";
 
 export function createWorkspace() {
-    // 创建工作区组件作为整体容器
+    // 0. 工作区整体容器
     const workspaceElement = document.createElement("div");
     workspaceElement.className = "workspace";
 
-    // 创建文件区组件，传入 Markdown 文件列表和业务函数
+    // 1. 创建文件区组件，传入 Markdown 文件列表和业务函数
     const fileArea = createFileArea(markdownFiles, {
         onSelect: handleFileSelect,
         onCreate: handleFileCreate,
@@ -22,11 +22,10 @@ export function createWorkspace() {
     });
     workspaceElement.append(fileArea.element);
 
-
-    // 以下是文件区相关业务
-    // 选择文件并更新页面内容
+    // 1.1 选择文件并更新页面内容
     function handleFileSelect(markdownFile) {
         selectFile(markdownFile.id);
+        fileArea.render(markdownFiles, currentFileId);
         documentArea.render(markdownFile);
     }
     // 添加文件
@@ -43,13 +42,14 @@ export function createWorkspace() {
 
         // 删除并重新渲染文件列表
         deleteFile(id);
-        fileArea.render(markdownFiles);
 
         // 如果删除的是当前文件，则清空选中状态和编辑区
         if (isCurrentFile) {
             selectFile(null);
             documentArea.clear();
         }
+
+        fileArea.render(markdownFiles,currentFileId);
     }
 
     // 从浏览器 File 对象导入文件

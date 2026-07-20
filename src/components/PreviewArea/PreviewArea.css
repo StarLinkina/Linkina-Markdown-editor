@@ -1,2 +1,11 @@
 .preview-area {
+    width: 100%;
+
+    flex: 1 1 auto;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
 }

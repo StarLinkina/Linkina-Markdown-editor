@@ -1,16 +1,16 @@
 .button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+
+    flex-shrink: 0;
 
     height: 32px;
-    padding: 5px 10px;
-
     border: 0;
+    padding: 0;
 
-    background: #4f46e5;
-    color: black;
+    font: inherit;
+    line-height: 1;
 
     cursor: pointer;
 }
@@ -19,11 +19,23 @@
     background: #4338ca;
 }
 
+
 .button:active {
     transform: scale(0.97);
 }
 
-.button__icon {
-    width: 20px;
-    height: 20px;
+.button-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.text-button{
+    min-width: 32px;
+    padding: 0 12px;
+    gap: 8px;
+}   
+
+.icon-button{
+    width: 32px;
 }

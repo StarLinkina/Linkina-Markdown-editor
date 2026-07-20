@@ -1,0 +1,71 @@
+.file-item {
+    position: relative;
+
+    width: 100%;
+    min-height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+    padding: 0 6px 0 10px;
+
+    border-left: 3px solid transparent;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.file-item-title {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    margin: 0;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.file-item-actions {
+    flex: 0 0 auto;
+
+    display: flex;
+    align-items: center;
+
+    gap: 2px;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: opacity 120ms ease;
+}
+
+.file-item:hover .file-item-actions,
+.file-item:focus-within .file-item-actions {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.file-item-active {
+    font-weight: 600;
+}
+
+.file-item-active::before {
+    content: "";
+
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+
+    width: 3px;
+    border-radius: 3px;
+
+    background-color: currentColor;
+}

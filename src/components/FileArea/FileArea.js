@@ -10,16 +10,16 @@ export function createFileArea(markdownFiles, { onSelect, onCreate, onDelete, on
     const fileAreaElement = document.createElement("aside");
     fileAreaElement.className = "file-area";
 
-    // 文件功能导航栏
+    // 1. 文件功能栏容器
     const fileToolbarElement = document.createElement("nav");
     fileToolbarElement.className = "file-toolbar";
 
-    // 新建文件按钮
+    // 1.1 新建文件按钮
     const createFileButtonElement = createButton({ image: newFileIcon, alt: "新建文件" });
     fileToolbarElement.append(createFileButtonElement);
     createFileButtonElement.addEventListener("click", () => { onCreate(); });
 
-    // 隐藏的外部文件输入框
+    // 1.2.tool 隐藏的外部文件输入框
     const fileInputElement = document.createElement("input");
     fileInputElement.type = "file";
     fileInputElement.accept = ".md,.markdown,text/markdown,text/plain";
@@ -37,13 +37,14 @@ export function createFileArea(markdownFiles, { onSelect, onCreate, onDelete, on
         }
     });
 
-    // 外部导入文件按钮
+    // 1.2 外部导入文件按钮
     const importFileButtonElement = createButton({ image: importFileIcon, alt: "导入文件" });
     fileToolbarElement.append(importFileButtonElement);
     importFileButtonElement.addEventListener("click", () => { fileInputElement.click(); });
     fileAreaElement.append(fileToolbarElement);
 
-    // 文件展示列表
+
+    // 2. 文件展示列表
     const fileListElement = document.createElement("div");
     fileListElement.className = "file-list";
 
@@ -54,10 +55,15 @@ export function createFileArea(markdownFiles, { onSelect, onCreate, onDelete, on
     fileAreaElement.append(fileListElement);
 
     // 重新渲染文件列表
-    function render(nextMarkdownFiles) {
+    function render(nextMarkdownFiles, currentFileId = null) {
         fileListElement.replaceChildren();
         nextMarkdownFiles.forEach(markdownFile => {
-            fileListElement.append(createFileItem(markdownFile, { onSelect, onDelete, onExport }));
+            fileListElement.append(
+                createFileItem(
+                    markdownFile, 
+                    { onSelect, onDelete, onExport, isActive: markdownFile.id === currentFileId }
+                )
+            );
         });
     }
 
