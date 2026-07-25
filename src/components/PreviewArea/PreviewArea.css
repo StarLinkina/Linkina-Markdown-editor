@@ -6,6 +6,225 @@
     min-width: 0;
     min-height: 0;
 
+    box-sizing: border-box;
+    padding:
+        40px
+        max(24px, calc((100% - 860px) / 2))
+        72px;
+
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+
+    font-size: 16px;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+    text-rendering: optimizeLegibility;
+}
+
+.preview-area > :first-child {
+    margin-top: 0;
+}
+
+.preview-area > :last-child {
+    margin-bottom: 0;
+}
+
+.preview-area h1,
+.preview-area h2,
+.preview-area h3,
+.preview-area h4,
+.preview-area h5,
+.preview-area h6 {
+    margin-top: 1.8em;
+    margin-bottom: 0.7em;
+
+    line-height: 1.3;
+    text-wrap: balance;
+}
+
+.preview-area h1 {
+    font-size: 2em;
+    letter-spacing: -0.025em;
+}
+
+.preview-area h2 {
+    font-size: 1.5em;
+    letter-spacing: -0.015em;
+}
+
+.preview-area h3 {
+    font-size: 1.25em;
+}
+
+.preview-area h4 {
+    font-size: 1.1em;
+}
+
+.preview-area h5,
+.preview-area h6 {
+    font-size: 1em;
+}
+
+.preview-area p,
+.preview-area blockquote,
+.preview-area ul,
+.preview-area ol,
+.preview-area dl,
+.preview-area table,
+.preview-area pre,
+.preview-area details {
+    margin-top: 0;
+    margin-bottom: 1.25em;
+}
+
+.preview-area ul,
+.preview-area ol {
+    padding-left: 1.75em;
+}
+
+.preview-area li + li {
+    margin-top: 0.3em;
+}
+
+.preview-area li > ul,
+.preview-area li > ol {
+    margin-top: 0.3em;
+    margin-bottom: 0;
+}
+
+.preview-area blockquote {
+    margin-left: 0;
+    margin-right: 0;
+    border-left-width: 4px;
+    border-left-style: solid;
+    padding-left: 1em;
+}
+
+.preview-area blockquote > :last-child {
+    margin-bottom: 0;
+}
+
+.preview-area a {
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.18em;
+}
+
+.preview-area strong {
+    font-weight: 650;
+}
+
+.preview-area hr {
+    height: 0;
+    margin: 2em 0;
+    border: 0;
+    border-top-width: 1px;
+    border-top-style: solid;
+}
+
+.preview-area img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.5em auto;
+}
+
+.preview-area table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.preview-area th,
+.preview-area td {
+    border-width: 1px;
+    border-style: solid;
+    padding: 0.55em 0.8em;
+    text-align: left;
+    vertical-align: top;
+}
+
+.preview-area th {
+    font-weight: 650;
+}
+
+.preview-area code,
+.preview-area pre,
+.preview-area kbd,
+.preview-area samp {
+    font-family:
+        "JetBrains Mono",
+        "Cascadia Code",
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        monospace;
+}
+
+.preview-area :not(pre) > code {
+    border-radius: 4px;
+    padding: 0.15em 0.35em;
+
+    font-size: 0.875em;
+    white-space: break-spaces;
+}
+
+.preview-area pre {
+    max-width: 100%;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 8px;
+    padding: 1em 1.1em;
+
+    overflow: auto;
+    scrollbar-gutter: stable;
+
+    font-size: 0.875em;
+    line-height: 1.65;
+    tab-size: 4;
+}
+
+.preview-area pre code {
+    display: block;
+    min-width: max-content;
+    border: 0;
+    padding: 0;
+
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre;
+}
+
+.preview-area input[type="checkbox"] {
+    margin: 0 0.45em 0.15em 0;
+    vertical-align: middle;
+}
+
+.preview-area details {
+    padding: 0.5em 0;
+}
+
+.preview-area summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .preview-area {
+        padding: 28px 18px 52px;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .preview-area h1 {
+        font-size: 1.75em;
+    }
+
+    .preview-area h2 {
+        font-size: 1.4em;
+    }
 }
