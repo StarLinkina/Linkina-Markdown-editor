@@ -20,8 +20,29 @@ export function createDocumentArea({ onContentChange }) {
     const editArea = createEditArea(handleInput);
     const previewArea = createPreviewArea();
 
+    const emptyStateElement = document.createElement("section");  //空状态对象
+    emptyStateElement.className = "document-empty-state";
+
+    const emptyStateContentElement = document.createElement("div");
+    emptyStateContentElement.className = "document-empty-state__content";
+
+    const emptyStateTitleElement = document.createElement("h2");
+    emptyStateTitleElement.className = "document-empty-state__title";
+    emptyStateTitleElement.textContent = "尚未打开文件";
+
+    const emptyStateDescriptionElement = document.createElement("p");
+    emptyStateDescriptionElement.className = "document-empty-state__description";
+    emptyStateDescriptionElement.textContent = "从左侧选择一个 Markdown 文件，或新建、导入文件后开始编辑。";
+
+    emptyStateContentElement.append(
+        emptyStateTitleElement,
+        emptyStateDescriptionElement
+    );
+    emptyStateElement.append(emptyStateContentElement);
+
     documentAreaElement.append(
         toolbarElement,
+        emptyStateElement,
         editArea.element,
         previewArea.element
     );
@@ -77,10 +98,11 @@ export function createDocumentArea({ onContentChange }) {
 
         editButtonElement.disabled = !hasSelectedFile;
         previewButtonElement.disabled = !hasSelectedFile;
+        emptyStateElement.hidden = hasSelectedFile;
 
         //若未选中任何文件重载
         if (!hasSelectedFile) {
-            editArea.element.hidden = false;
+            editArea.element.hidden = true;
             previewArea.element.hidden = true;
             return;
         }
