@@ -13,10 +13,26 @@
     line-height: 1;
 
     cursor: pointer;
+
+    transition: transform 120ms ease;
 }
 
-.button:hover {
-    background: #4338ca;
+.button:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.button:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+.button:disabled {
+    cursor: not-allowed;
+}
+
+.button:focus-visible {
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: 2px;
 }
 
 

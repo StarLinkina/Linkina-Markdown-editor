@@ -102,3 +102,42 @@
         font-size: 14px;
     }
 }
+
+.document-mode-button {
+    position: relative;
+
+    transition:
+        transform 120ms ease,
+        font-weight 120ms ease;
+}
+
+.document-mode-button::after {
+    content: "";
+
+    position: absolute;
+    right: 12px;
+    bottom: 2px;
+    left: 12px;
+
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+
+    transform: scaleX(0);
+    transform-origin: center;
+
+    transition: transform 120ms ease;
+}
+
+.document-mode-button--active {
+    font-weight: 700;
+    cursor: default;
+}
+
+.document-mode-button--active::after {
+    transform: scaleX(1);
+}
+
+.document-mode-button--active:hover,
+.document-mode-button--active:active {
+    transform: none;
+}

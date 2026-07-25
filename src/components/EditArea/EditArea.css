@@ -51,3 +51,17 @@
         line-height: 1.7;
     }
 }
+
+.edit-area-textarea:not(:disabled) {
+    cursor: text;
+}
+
+.edit-area-textarea:disabled {
+    cursor: not-allowed;
+}
+
+.edit-area-textarea:focus-visible {
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: -2px;
+}

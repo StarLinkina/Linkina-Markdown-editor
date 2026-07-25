@@ -2,6 +2,7 @@ import "./Button.css";
 
 export function createButton(options) {
     const buttonElement = document.createElement("button");
+    buttonElement.type = "button";
     buttonElement.className = "button";
 
     if (options.text) {
