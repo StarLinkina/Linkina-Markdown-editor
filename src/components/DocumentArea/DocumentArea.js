@@ -127,8 +127,12 @@ export function createDocumentArea({ onContentChange }) {
 
         //若未选中任何文件重载
         if (!hasSelectedFile) {
+            //用空内容重载预览区，提高渲染效率
+            previewArea.render("");
+
             editArea.element.hidden = true;
             previewArea.element.hidden = true;
+            
             updateModeButtons();
             return;
         }

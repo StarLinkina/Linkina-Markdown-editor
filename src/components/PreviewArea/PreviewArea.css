@@ -199,6 +199,12 @@
     white-space: pre;
 }
 
+.preview-area .hljs {
+    display: block;
+    padding: 0;
+    overflow: visible;
+}
+
 .preview-area input[type="checkbox"] {
     margin: 0 0.45em 0.15em 0;
     vertical-align: middle;
