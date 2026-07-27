@@ -6,6 +6,10 @@ import { markdownFiles, currentFileId } from "../../state.js";
 import { createFileArea } from "../FileArea";
 import { createDocumentArea } from "../DocumentArea";
 import { createExtendArea } from "../ExtendArea";
+import { createSidebarRail } from "../SidebarRail";
+
+import panelLeftOpen from "../../assets/left-sidebar/panel-left-open.svg";
+import panelRightOpen from "../../assets/right-sidebar/panel-right-open.svg";
 
 const SIDEBAR_MODE = Object.freeze({
     EXPANDED: "expanded",
@@ -80,15 +84,89 @@ export function createWorkspace() {
     const rightResizeHandleElement = document.createElement("div");
     rightResizeHandleElement.className = "workspace-resize-handle workspace-resize-handle--right";
 
+    function renderSidebarLayout() {
+        const isFileAreaExpanded =
+            sidebarLayoutState.file.mode === SIDEBAR_MODE.EXPANDED;
+        const isExtendAreaExpanded =
+            sidebarLayoutState.extend.mode === SIDEBAR_MODE.EXPANDED;
+
+        const fileAreaWidth = isFileAreaExpanded
+            ? sidebarLayoutState.file.width
+            : SIDEBAR_LAYOUT_CONFIG.collapsedWidth;
+        const extendAreaWidth = isExtendAreaExpanded
+            ? sidebarLayoutState.extend.width
+            : SIDEBAR_LAYOUT_CONFIG.collapsedWidth;
+
+        workspaceElement.style.setProperty(
+            "--file-area-current-width",
+            `${fileAreaWidth}px`
+        );
+        workspaceElement.style.setProperty(
+            "--extend-area-current-width",
+            `${extendAreaWidth}px`
+        );
+
+        fileArea.element.hidden = !isFileAreaExpanded;
+        fileSidebarRailElement.hidden = isFileAreaExpanded;
+        extendArea.hidden = !isExtendAreaExpanded;
+        extendSidebarRailElement.hidden = isExtendAreaExpanded;
+
+        fileSidebarShellElement.classList.toggle(
+            "workspace-sidebar--collapsed",
+            !isFileAreaExpanded
+        );
+        extendSidebarShellElement.classList.toggle(
+            "workspace-sidebar--collapsed",
+            !isExtendAreaExpanded
+        );
+    }
+
+    function collapseSidebar(side) {
+        const sidebarState = sidebarLayoutState[side];
+        const sidebarConfig = SIDEBAR_LAYOUT_CONFIG[side];
+
+        if (!sidebarState || !sidebarConfig) return;
+        if (sidebarState.mode === SIDEBAR_MODE.COLLAPSED) return;
+
+        if (sidebarState.width >= sidebarConfig.minWidth) {
+            sidebarState.lastExpandedWidth = sidebarState.width;
+        }
+
+        sidebarState.mode = SIDEBAR_MODE.COLLAPSED;
+        renderSidebarLayout();
+    }
+
+    function expandSidebar(side) {
+        const sidebarState = sidebarLayoutState[side];
+        const sidebarConfig = SIDEBAR_LAYOUT_CONFIG[side];
+
+        if (!sidebarState || !sidebarConfig) return;
+        if (sidebarState.mode === SIDEBAR_MODE.EXPANDED) return;
+
+        sidebarState.width = Math.min(
+            sidebarConfig.maxWidth,
+            Math.max(sidebarConfig.minWidth, sidebarState.lastExpandedWidth)
+        );
+        sidebarState.mode = SIDEBAR_MODE.EXPANDED;
+        renderSidebarLayout();
+    }
+
     // 1. 创建文件区组件，传入 Markdown 文件列表和业务函数
     const fileArea = createFileArea(markdownFiles, {
         onSelect: handleFileSelect,
         onCreate: handleFileCreate,
         onDelete: handleFileDelete,
         onImport: handleFileImport,
-        onExport: handleFileExport
+        onExport: handleFileExport,
+        onCollapse: () => collapseSidebar("file")
     });
-    fileSidebarShellElement.append(fileArea.element);
+    const fileSidebarRailElement = createSidebarRail({
+        side: "file",
+        image: panelLeftOpen,
+        alt: "展开文件区",
+        onExpand: () => expandSidebar("file")
+    });
+    fileSidebarShellElement.append(fileArea.element, fileSidebarRailElement);
 
     // 1.1 选择文件并更新页面内容
     function handleFileSelect(markdownFile) {
@@ -157,8 +235,16 @@ export function createWorkspace() {
         updateFile(currentFileId, content);
     }
 
-    const extendArea = createExtendArea();
-    extendSidebarShellElement.append(extendArea);
+    const extendArea = createExtendArea({
+        onCollapse: () => collapseSidebar("extend")
+    });
+    const extendSidebarRailElement = createSidebarRail({
+        side: "extend",
+        image: panelRightOpen,
+        alt: "展开扩展区",
+        onExpand: () => expandSidebar("extend")
+    });
+    extendSidebarShellElement.append(extendArea, extendSidebarRailElement);
 
     workspaceElement.append(
         fileSidebarShellElement,
@@ -167,6 +253,8 @@ export function createWorkspace() {
         rightResizeHandleElement,
         extendSidebarShellElement
     );
+
+    renderSidebarLayout();
 
     return workspaceElement;
 }

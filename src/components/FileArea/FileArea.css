@@ -31,6 +31,10 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
+.file-toolbar__collapse-button {
+    margin-left: auto;
+}
+
 .file-list {
   width: 100%;
 

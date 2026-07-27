@@ -5,8 +5,12 @@ import { createFileItem } from "../FileItem";
 
 import newFileIcon from "../../assets/new-file/file-plus.svg";
 import importFileIcon from "../../assets/import-file/import.svg";
+import panelLeftClose from "../../assets/left-sidebar/panel-left-close.svg";
 
-export function createFileArea(markdownFiles, { onSelect, onCreate, onDelete, onImport, onExport }) {
+export function createFileArea(
+    markdownFiles,
+    { onSelect, onCreate, onDelete, onImport, onExport, onCollapse }
+) {
     const fileAreaElement = document.createElement("aside");
     fileAreaElement.className = "file-area";
 
@@ -41,6 +45,16 @@ export function createFileArea(markdownFiles, { onSelect, onCreate, onDelete, on
     const importFileButtonElement = createButton({ image: importFileIcon, alt: "导入文件" });
     fileToolbarElement.append(importFileButtonElement);
     importFileButtonElement.addEventListener("click", () => { fileInputElement.click(); });
+
+    // 1.3 收起文件区按钮
+    const collapseFileAreaButtonElement = createButton({
+        image: panelLeftClose,
+        alt: "收起文件区"
+    });
+    collapseFileAreaButtonElement.classList.add("file-toolbar__collapse-button");
+    collapseFileAreaButtonElement.addEventListener("click", onCollapse);
+    fileToolbarElement.append(collapseFileAreaButtonElement);
+
     fileAreaElement.append(fileToolbarElement);
 
 
