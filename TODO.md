@@ -30,6 +30,13 @@
 - [x] 收起和展开时不销毁 FileArea 或 ExtendArea 的原有 DOM，保留列表滚动位置和组件内部状态。
 - [x] 重新展开时恢复 `lastExpandedWidth`，而不是直接恢复默认宽度。
 
+### 代码组织
+
+- [x] 将收起边栏拆分为独立的 SidebarRail 组件。
+- [x] 将侧栏配置、状态、渲染和收起/展开逻辑拆分到 `workspaceLayout.js`。
+- [x] 将新建、删除、导入、导出和内容更新流程拆分到 `workspaceFileActions.js`。
+- [x] Workspace 只保留组件组合、依赖注入和文件选择等跨组件协调。
+
 ### 第三阶段：分割条拖动和吸附收起
 
 - [ ] 为左右分割条增加 `role="separator"`、垂直方向语义和可聚焦能力。

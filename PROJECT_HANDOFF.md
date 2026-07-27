@@ -107,7 +107,12 @@ src/
 ├─ components/
 │  ├─ Button/               通用按钮工厂
 │  ├─ Navbar/               顶部导航栏
-│  ├─ Workspace/            页面组合和业务协调
+│  ├─ Workspace/
+│  │  ├─ Workspace.js       页面组合、依赖注入和文件选择协调
+│  │  ├─ workspaceLayout.js 侧栏布局配置、状态和渲染控制
+│  │  └─ workspaceFileActions.js
+│  │                         新建、删除、导入、导出和内容更新流程
+│  ├─ SidebarRail/          侧区收起后的展开边栏
 │  ├─ FileArea/             左侧文件工具栏与文件列表
 │  ├─ FileItem/             单个 Markdown 文件项
 │  ├─ DocumentArea/         中央文档区和编辑/阅读模式
@@ -132,13 +137,17 @@ src/
 main
 ├─ Navbar
 └─ Workspace
-   ├─ FileArea
-   │  └─ FileItem
+   ├─ 文件侧区
+   │  ├─ FileArea
+   │  │  └─ FileItem
+   │  └─ SidebarRail
    ├─ DocumentArea
    │  ├─ 内部空状态
    │  ├─ EditArea
    │  └─ PreviewArea
-   └─ ExtendArea
+   └─ 扩展侧区
+      ├─ ExtendArea
+      └─ SidebarRail
 ```
 
 业务调用关系：
@@ -146,11 +155,12 @@ main
 ```text
 用户操作
 → 组件回调
-→ Workspace 事件处理函数
+→ workspaceFileActions
 → fileService
 → state 中的 markdownFiles
 → storage/localStorage
-→ Workspace 手动调用 render()
+→ 注入的 Workspace 协调回调
+→ FileArea / DocumentArea 手动调用 render()
 ```
 
 ## 6. 数据模型和状态
@@ -469,16 +479,13 @@ DocumentArea 当前还会在 `render(markdownFile)` 中先执行一次 `previewA
 
 当前 `markdownFiles` 数组可以被模块直接修改，页面依靠 Workspace 手动重新渲染。
 
-Workspace 同时承担：
+Workspace 已完成第一轮职责拆分：
 
-- UI 组合
-- prompt
-- 文件业务协调
-- 浏览器文件读取
-- Blob 下载
-- 手动渲染
+- `Workspace.js`：UI 组合、依赖注入和文件选择等跨组件协调
+- `workspaceLayout.js`：侧栏配置、状态、shell/rail 显隐和 Grid CSS 变量更新
+- `workspaceFileActions.js`：prompt、新建、删除、浏览器文件读取、Blob 下载和内容更新流程
 
-当前规模下可以接受。等搜索、重命名、快捷键、Electron 文件系统等功能进入后，再考虑：
+当前仍依赖可直接修改的全局数组、实时 ES Module 绑定和手动 render。等搜索、重命名、快捷键、Electron 文件系统等功能进入后，再考虑：
 
 - state 私有化和 getter
 - 轻量订阅机制
@@ -555,7 +562,7 @@ Workspace 同时承担：
 ### 阶段 D：代码质量
 
 - 减少重复 render
-- 逐步拆分 Workspace
+- 按功能增长继续拆分 Workspace（侧栏布局和文件操作流程已完成第一轮拆分）
 - 补充 service 和 storage 测试
 - 增加 lint/format
 - 更新 README、包名、页面标题和 favicon
