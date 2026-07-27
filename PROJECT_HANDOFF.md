@@ -6,11 +6,11 @@
 
 - 项目目录：`D:\Project_VScode\Web\Linkina-Markdown-editor\Linkina-Markdown-editor`
 - 当前分支：`main`
-- 当前提交：`a88f24e`（已完成 DocumentArea 第一轮排版、空状态、模式/输入状态和代码高亮前置能力）
-- 文档更新日期：2026-07-26
-- 生成本文档时业务代码工作区干净；`TODO.md` 有本次文档同步产生的未提交修改
-- `vite build` 已通过：共转换 56 个模块
-- 当前阶段：核心业务已完成，DocumentArea 第一轮样式与 Markdown 阅读体验已完成，正在继续处理整体主题、侧栏和交互细节
+- 当前提交：`0345543`（已完成 Workspace 布局与文件操作职责的第一轮拆分）
+- 文档更新日期：2026-07-27
+- 生成本文档时第三、第四阶段侧栏交互与响应式约束代码尚未提交
+- `vite build` 已通过：共转换 67 个模块
+- 当前阶段：核心业务、DocumentArea 第一轮体验、可拖动侧栏和文档区宽度保护已完成，下一步处理布局持久化、键盘操作、主题与交互细节
 
 ## 2. 项目定位
 
@@ -109,10 +109,13 @@ src/
 │  ├─ Navbar/               顶部导航栏
 │  ├─ Workspace/
 │  │  ├─ Workspace.js       页面组合、依赖注入和文件选择协调
-│  │  ├─ workspaceLayout.js 侧栏布局配置、状态和渲染控制
+│  │  ├─ workspaceLayout.js 侧栏状态、拖动会话、响应式观察和渲染控制
+│  │  ├─ workspaceLayoutConstraints.js
+│  │  │                     布局常量、文档区保护和侧栏宽度纯计算
 │  │  └─ workspaceFileActions.js
 │  │                         新建、删除、导入、导出和内容更新流程
 │  ├─ SidebarRail/          侧区收起后的展开边栏
+│  ├─ ResizeHandle/         侧区宽度拖动分割条
 │  ├─ FileArea/             左侧文件工具栏与文件列表
 │  ├─ FileItem/             单个 Markdown 文件项
 │  ├─ DocumentArea/         中央文档区和编辑/阅读模式
@@ -141,10 +144,12 @@ main
    │  ├─ FileArea
    │  │  └─ FileItem
    │  └─ SidebarRail
+   ├─ 左 ResizeHandle
    ├─ DocumentArea
    │  ├─ 内部空状态
    │  ├─ EditArea
    │  └─ PreviewArea
+   ├─ 右 ResizeHandle
    └─ 扩展侧区
       ├─ ExtendArea
       └─ SidebarRail
@@ -161,6 +166,13 @@ main
 → storage/localStorage
 → 注入的 Workspace 协调回调
 → FileArea / DocumentArea 手动调用 render()
+
+侧栏操作
+→ SidebarRail 或 ResizeHandle
+→ workspaceLayout
+→ workspaceLayoutConstraints 计算当前窗口下的实际布局
+→ 用户布局状态、临时响应式视图和 Workspace CSS 变量
+→ FileArea / SidebarRail / ExtendArea 显隐
 ```
 
 ## 6. 数据模型和状态
@@ -332,7 +344,13 @@ main
 当前已完成第一轮：
 
 - 顶部 Navbar 基础布局
-- Workspace 三列 Grid
+- Workspace 五列 Grid（左右侧区、两个分割条和中央文档区）
+- 左右侧区按钮收起/展开与 48px SidebarRail
+- 左右分割条拖动调整宽度、阈值吸附收起和反向拖动展开
+- 分割条双击恢复默认宽度
+- DocumentArea 保留 480px 桌面端最小宽度，侧区拖动上限随可用空间动态变化
+- ResizeObserver 监听 Workspace 宽度，空间不足时依次临时收起 ExtendArea 和 FileArea
+- 响应式临时收起只改变渲染视图，不覆盖用户选择的模式、宽度和最后展开宽度
 - FileArea 固定工具栏和可滚动文件列表
 - FileItem 标题省略、操作按钮悬停显示、当前项标记
 - DocumentArea 纵向 Flex、工具栏排版和响应式间距
@@ -419,33 +437,7 @@ localStorage 是同步 API。文件变多或内容变大后可能导致输入卡
 - 末尾空格或句点
 - 用户标题已经包含 `.md` 时可能产生 `.md.md`
 
-### 9.6 Workspace 样式中仍有一个旧选择器
-
-`DocumentArea.css` 中原来的 `.document_area > .preview-area` 已经修复。
-
-当前仍存在：
-
-- `Workspace.css` 中的 `.work_space > *`
-
-实际组件类名是 `.workspace`，因此该规则目前不会生效。
-
-### 9.7 右侧扩展区宽度不一致
-
-全局变量：
-
-```css
---extend-area-width: 320px;
-```
-
-但 `ExtendArea.css` 又写了：
-
-```css
-width: 400px;
-```
-
-Workspace Grid 给右侧列分配 320px，子元素却要求 400px，可能导致溢出或挤压。样式阶段需要统一为单一尺寸来源。
-
-### 9.8 部分渲染存在重复
+### 9.6 部分渲染存在重复
 
 创建和导入文件时：
 
@@ -459,30 +451,31 @@ DocumentArea 也同时存在内部 `render(null)` 和 Workspace 外部 `clear()`
 
 DocumentArea 当前还会在 `render(markdownFile)` 中先执行一次 `previewArea.render(content)`，阅读模式下 `setMode(mode)` 随后会再次渲染。接入代码高亮后，这个重复渲染的成本更高，后续应调整为只在真正显示阅读模式时渲染预览。
 
-### 9.9 Navbar 和 ExtendArea 仍是占位功能
+### 9.7 Navbar 和 ExtendArea 仍是占位功能
 
-- Navbar 的左右栏按钮已经显示，但没有绑定折叠逻辑
-- 图标始终是 close 状态，还没有 open/close 状态切换
+- Navbar 当前保留空的顶部布局，侧栏控制已经移动到 FileArea、ExtendArea 和 SidebarRail
 - ExtendArea 目前是空容器
 
 这些属于当前样式与交互阶段的正常未完成项。
 
-### 9.10 可访问性和语义仍可继续完善
+### 9.8 可访问性和语义仍可继续完善
 
 - FileItem 外层是可点击的 `div`，键盘无法直接选择
 - 通用 Button 已显式设置 `type="button"`
 - 图标按钮已有 `aria-label` 和 `title`，这是正确的
 - 编辑/阅读按钮已有视觉激活状态，但尚未补充 `aria-pressed` 或等价的 tab 语义
+- ResizeHandle 已有 separator 语义和焦点状态，但键盘调整宽度及动态 `aria-valuenow` 尚未实现
 - 后续可以把文件列表改为 `ul/li`，标题操作改为可聚焦按钮
 
-### 9.11 状态和架构仍是小项目实现
+### 9.9 状态和架构仍是小项目实现
 
 当前 `markdownFiles` 数组可以被模块直接修改，页面依靠 Workspace 手动重新渲染。
 
 Workspace 已完成第一轮职责拆分：
 
 - `Workspace.js`：UI 组合、依赖注入和文件选择等跨组件协调
-- `workspaceLayout.js`：侧栏配置、状态、shell/rail 显隐和 Grid CSS 变量更新
+- `workspaceLayout.js`：侧栏状态、拖动会话、吸附判断、尺寸观察、shell/rail 显隐和 Grid CSS 变量更新
+- `workspaceLayoutConstraints.js`：布局尺寸常量、DocumentArea 最小宽度保护、动态最大宽度和响应式临时收起顺序
 - `workspaceFileActions.js`：prompt、新建、删除、浏览器文件读取、Blob 下载和内容更新流程
 
 当前仍依赖可直接修改的全局数组、实时 ES Module 绑定和手动 render。等搜索、重命名、快捷键、Electron 文件系统等功能进入后，再考虑：
@@ -494,7 +487,7 @@ Workspace 已完成第一轮职责拆分：
 
 暂时不要为此引入大型状态库。
 
-### 9.12 工程配置仍未完善
+### 9.10 工程配置仍未完善
 
 - `package.json` 名称仍是 `npx`
 - 页面 `<title>` 仍是 `npx`
@@ -502,7 +495,7 @@ Workspace 已完成第一轮职责拆分：
 - 没有测试、lint 和格式化脚本
 - README 只记录了简要目标，没有同步当前实际完成度
 
-### 9.13 编辑区与阅读区尚未按源码位置同步滚动
+### 9.11 编辑区与阅读区尚未按源码位置同步滚动
 
 当前 EditArea 和 PreviewArea 是两个独立滚动容器。用户在编辑区滚动后切换到阅读模式，预览区仍保留自己的滚动位置，因此可能看不到刚才正在编辑的内容。
 
@@ -532,13 +525,10 @@ Workspace 已完成第一轮职责拆分：
 
 ### 阶段 A：完成当前样式与布局
 
-- 修复 Workspace 中剩余的旧 snake_case CSS 选择器
-- 统一右侧扩展区宽度
 - 在主题阶段完成整体色彩、边框和背景
 - 为 Markdown 阅读区和代码高亮设计亮色/暗色主题
 - 完成 FileItem 选中、悬停、聚焦状态
-- 检查小窗口下三列布局和滚动
-- 决定左右侧栏折叠时 Grid 如何变化
+- 在后续移动端阶段为低于桌面五列最小宽度的窗口设计覆盖式抽屉布局
 
 ### 阶段 B：存储可靠性
 
@@ -551,12 +541,11 @@ Workspace 已完成第一轮职责拆分：
 
 ### 阶段 C：交互完善
 
-- Navbar 侧栏开关
 - 文件重命名
 - 文件名清理
 - 导入错误提示和大小限制
 - 导出兼容性
-- 键盘操作和可访问性
+- 分割条键盘调整、动态 ARIA 数值和其他可访问性
 - 使用源码行号锚点实现编辑/阅读模式的双向滚动定位同步（已讨论，暂缓）
 
 ### 阶段 D：代码质量
