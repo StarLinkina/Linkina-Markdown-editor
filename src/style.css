@@ -5,10 +5,6 @@
     "Microsoft YaHei",
     system-ui,
     sans-serif;
-
-    /* 变量 */
-    --file-area-width: 260px;
-    --extend-area-width: 320px;
 }
 
 [hidden]{

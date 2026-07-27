@@ -7,10 +7,78 @@ import { createFileArea } from "../FileArea";
 import { createDocumentArea } from "../DocumentArea";
 import { createExtendArea } from "../ExtendArea";
 
+const SIDEBAR_MODE = Object.freeze({
+    EXPANDED: "expanded",
+    COLLAPSED: "collapsed"
+});
+
+const SIDEBAR_LAYOUT_CONFIG = Object.freeze({
+    file: Object.freeze({
+        defaultWidth: 260,
+        minWidth: 200,
+        maxWidth: 420,
+        collapseThreshold: 176
+    }),
+    extend: Object.freeze({
+        defaultWidth: 320,
+        minWidth: 240,
+        maxWidth: 480,
+        collapseThreshold: 216
+    }),
+    collapsedWidth: 48,
+    resizeHandleWidth: 6,
+    resizeHandleLineWidth: 1
+});
+
+function createSidebarLayoutState(sidebarConfig) {
+    return {
+        mode: SIDEBAR_MODE.EXPANDED,
+        width: sidebarConfig.defaultWidth,
+        lastExpandedWidth: sidebarConfig.defaultWidth
+    };
+}
+
 export function createWorkspace() {
     // 0. 工作区整体容器
     const workspaceElement = document.createElement("div");
     workspaceElement.className = "workspace";
+
+    // 左右侧区状态互相独立，后续的拖动和收起逻辑只修改这里。
+    const sidebarLayoutState = {
+        file: createSidebarLayoutState(SIDEBAR_LAYOUT_CONFIG.file),
+        extend: createSidebarLayoutState(SIDEBAR_LAYOUT_CONFIG.extend)
+    };
+
+    workspaceElement.style.setProperty(
+        "--file-area-current-width",
+        `${sidebarLayoutState.file.width}px`
+    );
+    workspaceElement.style.setProperty(
+        "--extend-area-current-width",
+        `${sidebarLayoutState.extend.width}px`
+    );
+    workspaceElement.style.setProperty(
+        "--resize-handle-width",
+        `${SIDEBAR_LAYOUT_CONFIG.resizeHandleWidth}px`
+    );
+    workspaceElement.style.setProperty(
+        "--resize-handle-line-width",
+        `${SIDEBAR_LAYOUT_CONFIG.resizeHandleLineWidth}px`
+    );
+
+    // 左右侧区外壳由 Workspace 统一分配宽度。
+    const fileSidebarShellElement = document.createElement("div");
+    fileSidebarShellElement.className = "workspace-sidebar workspace-sidebar--file";
+
+    const extendSidebarShellElement = document.createElement("div");
+    extendSidebarShellElement.className = "workspace-sidebar workspace-sidebar--extend";
+
+    // 第一阶段只建立分割条布局，拖动交互将在后续接入。
+    const leftResizeHandleElement = document.createElement("div");
+    leftResizeHandleElement.className = "workspace-resize-handle workspace-resize-handle--left";
+
+    const rightResizeHandleElement = document.createElement("div");
+    rightResizeHandleElement.className = "workspace-resize-handle workspace-resize-handle--right";
 
     // 1. 创建文件区组件，传入 Markdown 文件列表和业务函数
     const fileArea = createFileArea(markdownFiles, {
@@ -20,7 +88,7 @@ export function createWorkspace() {
         onImport: handleFileImport,
         onExport: handleFileExport
     });
-    workspaceElement.append(fileArea.element);
+    fileSidebarShellElement.append(fileArea.element);
 
     // 1.1 选择文件并更新页面内容
     function handleFileSelect(markdownFile) {
@@ -83,14 +151,22 @@ export function createWorkspace() {
 
     documentArea.clear();
 
-    workspaceElement.append(documentArea.element);
-
     // 以下是文档区域相关业务
     // 更新当前 Markdown 文件的内容
     function handleContentChange(content) {
         updateFile(currentFileId, content);
     }
-    workspaceElement.append(createExtendArea());
+
+    const extendArea = createExtendArea();
+    extendSidebarShellElement.append(extendArea);
+
+    workspaceElement.append(
+        fileSidebarShellElement,
+        leftResizeHandleElement,
+        documentArea.element,
+        rightResizeHandleElement,
+        extendSidebarShellElement
+    );
 
     return workspaceElement;
 }
