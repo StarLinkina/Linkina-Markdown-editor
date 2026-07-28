@@ -7,13 +7,12 @@ export function createResizeHandle({
     onResize,
     onResizeEnd,
     onResizeCancel,
+    onKeyboardResize,
     onReset
 }) {
     const resizeHandleElement = document.createElement("div");
     resizeHandleElement.className = `resize-handle resize-handle--${side}`;
     resizeHandleElement.setAttribute("role", "separator");
-    resizeHandleElement.setAttribute("aria-orientation", "vertical");
-    resizeHandleElement.setAttribute("aria-label", label);
     resizeHandleElement.title = label;
     resizeHandleElement.tabIndex = 0;
 
@@ -34,9 +33,7 @@ export function createResizeHandle({
             activePointerId !== null ||
             event.isPrimary === false ||
             event.button !== 0
-        ) {
-            return;
-        }
+        ) return;
 
         event.preventDefault();
         activePointerId = event.pointerId;
@@ -90,6 +87,21 @@ export function createResizeHandle({
         onReset();
     });
 
+    resizeHandleElement.addEventListener("keydown", event => {
+        if (
+            event.key !== "ArrowLeft"
+            && event.key !== "ArrowRight"
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        onKeyboardResize({
+            key: event.key,
+            step: event.shiftKey ? 24 : 8
+        });
+    });
+
     function setSnapPreview(isActive) {
         resizeHandleElement.classList.toggle(
             "resize-handle--snap-preview",
@@ -97,8 +109,30 @@ export function createResizeHandle({
         );
     }
 
+    function setValue({
+        min,
+        max,
+        now,
+        text
+    }) {
+        resizeHandleElement.setAttribute(
+            "aria-valuemin",
+            String(Math.round(min))
+        );
+        resizeHandleElement.setAttribute(
+            "aria-valuemax",
+            String(Math.round(max))
+        );
+        resizeHandleElement.setAttribute(
+            "aria-valuenow",
+            String(Math.round(now))
+        );
+        resizeHandleElement.setAttribute("aria-valuetext", text);
+    }
+
     return {
         element: resizeHandleElement,
-        setSnapPreview
+        setSnapPreview,
+        setValue
     };
 }

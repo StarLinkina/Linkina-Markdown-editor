@@ -1,3 +1,8 @@
+export const SIDEBAR_MODE = Object.freeze({
+    EXPANDED: "expanded",
+    COLLAPSED: "collapsed"
+});
+
 export const WORKSPACE_LAYOUT_CONFIG = Object.freeze({
     file: Object.freeze({
         defaultWidth: 260,

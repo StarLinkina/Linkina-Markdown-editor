@@ -1,26 +1,18 @@
 import { createSidebarRail } from "../SidebarRail";
 import { createResizeHandle } from "../ResizeHandle";
 import {
+    SIDEBAR_MODE,
     WORKSPACE_LAYOUT_CONFIG,
     getSidebarDynamicMaxWidth,
     resolveResponsiveSidebarViews
 } from "./workspaceLayoutConstraints.js";
+import {
+    loadWorkspaceLayoutState,
+    saveWorkspaceLayoutState
+} from "./workspaceLayoutStorage.js";
 
 import panelLeftOpen from "../../assets/left-sidebar/panel-left-open.svg";
 import panelRightOpen from "../../assets/right-sidebar/panel-right-open.svg";
-
-const SIDEBAR_MODE = Object.freeze({
-    EXPANDED: "expanded",
-    COLLAPSED: "collapsed"
-});
-
-function createSidebarLayoutState(sidebarConfig) {
-    return {
-        mode: SIDEBAR_MODE.EXPANDED,
-        width: sidebarConfig.defaultWidth,
-        lastExpandedWidth: sidebarConfig.defaultWidth
-    };
-}
 
 function createSidebarShell(side) {
     const sidebarShellElement = document.createElement("div");
@@ -29,11 +21,10 @@ function createSidebarShell(side) {
 }
 
 export function createWorkspaceLayout(workspaceElement) {
-    const sidebarLayoutState = {
-        file: createSidebarLayoutState(WORKSPACE_LAYOUT_CONFIG.file),
-        extend: createSidebarLayoutState(WORKSPACE_LAYOUT_CONFIG.extend)
-    };
+    // 装载布局状态
+    const sidebarLayoutState = loadWorkspaceLayoutState();
 
+    // 设置workspaceElement的宽度参数
     workspaceElement.style.setProperty(
         "--resize-handle-width",
         `${WORKSPACE_LAYOUT_CONFIG.resizeHandleWidth}px`
@@ -49,6 +40,8 @@ export function createWorkspaceLayout(workspaceElement) {
 
     const fileSidebarShellElement = createSidebarShell("file");
     const extendSidebarShellElement = createSidebarShell("extend");
+
+    // 左右拖动条
     const leftResizeHandle = createResizeHandle({
         side: "left",
         label: "调整文件区宽度",
@@ -56,6 +49,9 @@ export function createWorkspaceLayout(workspaceElement) {
         onResize: clientX => updateResize("file", clientX),
         onResizeEnd: clientX => finishResize("file", clientX),
         onResizeCancel: () => cancelResize("file"),
+        onKeyboardResize: keyboardInput => {
+            resizeWithKeyboard("file", keyboardInput);
+        },
         onReset: () => resetSidebar("file")
     });
     const rightResizeHandle = createResizeHandle({
@@ -65,9 +61,13 @@ export function createWorkspaceLayout(workspaceElement) {
         onResize: clientX => updateResize("extend", clientX),
         onResizeEnd: clientX => finishResize("extend", clientX),
         onResizeCancel: () => cancelResize("extend"),
+        onKeyboardResize: keyboardInput => {
+            resizeWithKeyboard("extend", keyboardInput);
+        },
         onReset: () => resetSidebar("extend")
     });
 
+    // 左右边栏
     const fileSidebarRailElement = createSidebarRail({
         side: "file",
         image: panelLeftOpen,
@@ -187,6 +187,53 @@ export function createWorkspaceLayout(workspaceElement) {
         rightResizeHandle.setSnapPreview(
             extendSidebarView.isCollapsePreview
         );
+
+        updateResizeHandleValue(
+            "file",
+            leftResizeHandle,
+            fileSidebarView,
+            extendSidebarView
+        );
+        updateResizeHandleValue(
+            "extend",
+            rightResizeHandle,
+            extendSidebarView,
+            fileSidebarView
+        );
+    }
+
+    function updateResizeHandleValue(
+        side,
+        resizeHandle,
+        sidebarView,
+        otherSidebarView
+    ) {
+        const dynamicMaxWidth = getSidebarDynamicMaxWidth({
+            side,
+            workspaceWidth: workspaceElement.clientWidth,
+            otherSidebarWidth: otherSidebarView.width
+        });
+        const areaName = side === "file" ? "文件区" : "扩展区";
+        let valueText = `${areaName}宽度 ${Math.round(
+            sidebarView.width
+        )} 像素`;
+
+        if (sidebarView.isResponsiveCollapsed) {
+            valueText = `${areaName}因空间不足临时收起，宽度 48 像素`;
+        } else if (sidebarView.isCollapsePreview) {
+            valueText = `${areaName}即将收起，当前宽度 ${Math.round(
+                sidebarView.width
+            )} 像素`;
+        } else if (!sidebarView.isExpanded) {
+            valueText = `${areaName}已收起，宽度 48 像素`;
+        }
+
+        resizeHandle.setValue({
+            min: WORKSPACE_LAYOUT_CONFIG.collapsedWidth,
+            max: dynamicMaxWidth,
+            now: sidebarView.width,
+            text: valueText
+        });
     }
 
     function calculateResizeWidth(side, clientX) {
@@ -276,6 +323,7 @@ export function createWorkspaceLayout(workspaceElement) {
         }
 
         resizeSession = null;
+        saveWorkspaceLayoutState(sidebarLayoutState);
         render();
     }
 
@@ -298,6 +346,7 @@ export function createWorkspaceLayout(workspaceElement) {
         sidebarState.mode = SIDEBAR_MODE.EXPANDED;
         sidebarState.width = sidebarConfig.defaultWidth;
         sidebarState.lastExpandedWidth = sidebarConfig.defaultWidth;
+        saveWorkspaceLayoutState(sidebarLayoutState);
         render();
     }
 
@@ -313,6 +362,7 @@ export function createWorkspaceLayout(workspaceElement) {
         }
 
         sidebarState.mode = SIDEBAR_MODE.COLLAPSED;
+        saveWorkspaceLayoutState(sidebarLayoutState);
         render();
     }
 
@@ -328,6 +378,71 @@ export function createWorkspaceLayout(workspaceElement) {
             Math.max(sidebarConfig.minWidth, sidebarState.lastExpandedWidth)
         );
         sidebarState.mode = SIDEBAR_MODE.EXPANDED;
+        saveWorkspaceLayoutState(sidebarLayoutState);
+        render();
+    }
+
+    function resizeWithKeyboard(side, {
+        key,
+        step
+    }) {
+        const sidebarState = sidebarLayoutState[side];
+        const sidebarConfig = WORKSPACE_LAYOUT_CONFIG[side];
+        if (!sidebarState || !sidebarConfig || resizeSession) return;
+
+        const sidebarViews = getResponsiveSidebarViews();
+        const sidebarView = sidebarViews[side];
+        const otherSide = side === "file" ? "extend" : "file";
+        const horizontalDirection =
+            key === "ArrowRight" ? 1 : -1;
+        const directionalStep = (
+            side === "file"
+                ? horizontalDirection
+                : -horizontalDirection
+        ) * step;
+        const dynamicMaxWidth = getSidebarDynamicMaxWidth({
+            side,
+            workspaceWidth: workspaceElement.clientWidth,
+            otherSidebarWidth: sidebarViews[otherSide].width
+        });
+
+        if (!sidebarView.isExpanded) {
+            if (
+                directionalStep < 0
+                || dynamicMaxWidth < sidebarConfig.minWidth
+            ) {
+                return;
+            }
+
+            const preferredWidth =
+                sidebarState.mode === SIDEBAR_MODE.EXPANDED
+                    ? sidebarState.width
+                    : sidebarState.lastExpandedWidth;
+            const expandedWidth = Math.min(
+                dynamicMaxWidth,
+                Math.max(sidebarConfig.minWidth, preferredWidth)
+            );
+
+            sidebarState.mode = SIDEBAR_MODE.EXPANDED;
+            sidebarState.width = expandedWidth;
+            sidebarState.lastExpandedWidth = expandedWidth;
+        } else {
+            const nextWidth = Math.min(
+                dynamicMaxWidth,
+                Math.max(
+                    sidebarConfig.minWidth,
+                    sidebarView.width + directionalStep
+                )
+            );
+
+            if (nextWidth === sidebarState.width) return;
+
+            sidebarState.mode = SIDEBAR_MODE.EXPANDED;
+            sidebarState.width = nextWidth;
+            sidebarState.lastExpandedWidth = nextWidth;
+        }
+
+        saveWorkspaceLayoutState(sidebarLayoutState);
         render();
     }
 

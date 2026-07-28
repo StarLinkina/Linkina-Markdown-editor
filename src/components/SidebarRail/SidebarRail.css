@@ -10,7 +10,8 @@
     overflow: hidden;
 }
 
-.sidebar-rail--extend {
+.sidebar-rail--extend,
+.sidebar-rail--file {
     background-color: #fcfcfc;
 }
 

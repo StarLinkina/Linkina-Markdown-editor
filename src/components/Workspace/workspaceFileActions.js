@@ -1,7 +1,7 @@
 import {
     addFile,
-    deleteFile as removeFile,
-    importFile as addImportedFile,
+    deleteFile,
+    importFile,
     selectFile,
     updateFile
 } from "../../services/fileService.js";
@@ -13,36 +13,43 @@ export function createWorkspaceFileActions({
     onFileListRender,
     onCurrentFileClear
 }) {
+    // 新建文件
     function createFile() {
         const title = prompt("请输入笔记标题")?.trim();
         if (!title) return;
 
         const markdownFile = addFile(title);
+
         onFileListRender(markdownFiles);
         onFileSelect(markdownFile);
     }
 
+    // 删除文件
     function deleteFile(id) {
         const isCurrentFile = currentFileId === id;
 
-        removeFile(id);
+        deleteFile(id);
 
+        // 删除的是当前选中的文件
         if (isCurrentFile) {
             selectFile(null);
             onCurrentFileClear();
         }
 
+        // render文件列表
         onFileListRender(markdownFiles, currentFileId);
     }
 
+    // 外部导入文件
     async function importFile(sourceFile) {
         const content = await sourceFile.text();
-        const markdownFile = addImportedFile(sourceFile.name, content);
+        const markdownFile = importFile(sourceFile.name, content);
 
         onFileListRender(markdownFiles);
         onFileSelect(markdownFile);
     }
 
+    // 导出文件
     function exportFile(id) {
         const markdownFile = markdownFiles.find(
             file => file.id === id
@@ -61,7 +68,9 @@ export function createWorkspaceFileActions({
         document.body.append(link);
         link.click();
         link.remove();
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 0);
     }
 
     function updateFileContent(content) {

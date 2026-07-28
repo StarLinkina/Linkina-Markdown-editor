@@ -14,7 +14,7 @@ export function createFileArea(
     const fileAreaElement = document.createElement("aside");
     fileAreaElement.className = "file-area";
 
-    // 1. 文件功能栏容器
+    // 1. 文件功能栏
     const fileToolbarElement = document.createElement("nav");
     fileToolbarElement.className = "file-toolbar";
 
@@ -68,7 +68,7 @@ export function createFileArea(
     });
     fileAreaElement.append(fileListElement);
 
-    // 重新渲染文件列表
+    // render函数
     function render(nextMarkdownFiles, currentFileId = null) {
         fileListElement.replaceChildren();
         nextMarkdownFiles.forEach(markdownFile => {

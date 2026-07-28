@@ -21,7 +21,7 @@ export function createEditArea(onContentChange) {
         onContentChange(textareaElement.value);
     });
 
-    // 重新渲染编辑区
+    // render函数
     function render(markdownFile) {
         const hasFile = Boolean(markdownFile);
 

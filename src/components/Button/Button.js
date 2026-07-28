@@ -10,7 +10,6 @@ export function createButton(options) {
         buttonElement.textContent = options.text;
     } else if (options.image) {
         buttonElement.classList.add("icon-button");
-        buttonElement.setAttribute("aria-label", options.alt ?? "");
         buttonElement.title = options.alt ?? "";
     }
 

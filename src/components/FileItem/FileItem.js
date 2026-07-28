@@ -6,13 +6,15 @@ import exportFileIcon from "../../assets/export-file/download.svg";
 import deleteFileIcon from "../../assets/delete-file/trash-2.svg";
 
 export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isActive = false} ) {
-    // 文件项的最外部容器
+
     const fileItemElement = document.createElement("div");
     fileItemElement.className = "file-item";
 
+    //选中状态
     if (isActive) {
         fileItemElement.classList.add("file-item-active");
     }
+
     // Markdown 文件标题
     const fileTitleElement = document.createElement("p");
     fileTitleElement.className = "file-item-title";
@@ -32,7 +34,7 @@ export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isA
     // 删除操作
     const deleteButtonElement = createButton({ image: deleteFileIcon, alt: "删除文件"});
     deleteButtonElement.addEventListener("click", (event) => {
-        event.stopPropagation();
+        event.stopPropagation();  //点击事件停止向上传递，防止传递到整体的点击上
         onDelete(markdownFile.id);
     });
 

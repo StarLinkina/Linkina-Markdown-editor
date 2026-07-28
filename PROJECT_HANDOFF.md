@@ -6,11 +6,11 @@
 
 - 项目目录：`D:\Project_VScode\Web\Linkina-Markdown-editor\Linkina-Markdown-editor`
 - 当前分支：`main`
-- 当前提交：`0345543`（已完成 Workspace 布局与文件操作职责的第一轮拆分）
+- 当前提交：`bd7a80a`（已完成侧栏拖动、吸附收起和响应式文档区保护）
 - 文档更新日期：2026-07-27
-- 生成本文档时第三、第四阶段侧栏交互与响应式约束代码尚未提交
-- `vite build` 已通过：共转换 67 个模块
-- 当前阶段：核心业务、DocumentArea 第一轮体验、可拖动侧栏和文档区宽度保护已完成，下一步处理布局持久化、键盘操作、主题与交互细节
+- 生成本文档时第五阶段布局持久化、键盘操作和回归修复代码尚未提交
+- `vite build` 已通过：共转换 68 个模块
+- 当前阶段：核心业务、DocumentArea 第一轮体验和 Workspace 交互式布局已完成，下一步处理整体主题、文件存储可靠性和其他交互细节
 
 ## 2. 项目定位
 
@@ -112,6 +112,8 @@ src/
 │  │  ├─ workspaceLayout.js 侧栏状态、拖动会话、响应式观察和渲染控制
 │  │  ├─ workspaceLayoutConstraints.js
 │  │  │                     布局常量、文档区保护和侧栏宽度纯计算
+│  │  ├─ workspaceLayoutStorage.js
+│  │  │                     布局偏好校验、加载和独立持久化
 │  │  └─ workspaceFileActions.js
 │  │                         新建、删除、导入、导出和内容更新流程
 │  ├─ SidebarRail/          侧区收起后的展开边栏
@@ -172,6 +174,7 @@ main
 → workspaceLayout
 → workspaceLayoutConstraints 计算当前窗口下的实际布局
 → 用户布局状态、临时响应式视图和 Workspace CSS 变量
+→ workspaceLayoutStorage 在用户完成布局操作时保存偏好
 → FileArea / SidebarRail / ExtendArea 显隐
 ```
 
@@ -210,6 +213,14 @@ main
 - 添加、删除、导入、内容编辑都会调用保存
 
 当前只是基础实现，尚未加入防抖、容量错误处理、数据结构校验或版本迁移。
+
+Workspace 布局使用独立存储：
+
+- 存储键：`LINKINA-WORKSPACE-LAYOUT`
+- 当前结构版本：`1`
+- 保存左右侧区的 `mode`、`width` 和 `lastExpandedWidth`
+- 加载时校验模式、数值类型和宽度范围；无效数据回退到默认布局
+- 响应式临时收起不写回该存储，不会覆盖用户偏好
 
 ## 7. 已约定的命名和代码规范
 
@@ -351,6 +362,9 @@ main
 - DocumentArea 保留 480px 桌面端最小宽度，侧区拖动上限随可用空间动态变化
 - ResizeObserver 监听 Workspace 宽度，空间不足时依次临时收起 ExtendArea 和 FileArea
 - 响应式临时收起只改变渲染视图，不覆盖用户选择的模式、宽度和最后展开宽度
+- 布局偏好使用独立 localStorage 键保存，并在加载时校验和规范化
+- 分割条支持方向键 `8px`、Shift + 方向键 `24px` 调宽
+- 分割条动态维护 `aria-valuemin`、`aria-valuemax`、`aria-valuenow` 和状态说明
 - FileArea 固定工具栏和可滚动文件列表
 - FileItem 标题省略、操作按钮悬停显示、当前项标记
 - DocumentArea 纵向 Flex、工具栏排版和响应式间距
@@ -427,11 +441,11 @@ localStorage 是同步 API。文件变多或内容变大后可能导致输入卡
 - localStorage 容量预检查
 - 非 UTF-8 文本编码处理
 
-### 9.5 导出兼容性仍可增强
+### 9.5 导出文件名兼容性仍可增强
 
-当前在点击下载后立即 `URL.revokeObjectURL(url)`，部分环境下可以延迟到下一轮事件循环再撤销。
+Blob URL 已改为在下一轮事件循环撤销，避免下载尚未开始就提前失效。
 
-文件名也没有统一清理：
+当前文件名仍没有统一清理：
 
 - Windows 非法字符
 - 末尾空格或句点
@@ -464,7 +478,7 @@ DocumentArea 当前还会在 `render(markdownFile)` 中先执行一次 `previewA
 - 通用 Button 已显式设置 `type="button"`
 - 图标按钮已有 `aria-label` 和 `title`，这是正确的
 - 编辑/阅读按钮已有视觉激活状态，但尚未补充 `aria-pressed` 或等价的 tab 语义
-- ResizeHandle 已有 separator 语义和焦点状态，但键盘调整宽度及动态 `aria-valuenow` 尚未实现
+- ResizeHandle 已有 separator 语义、焦点状态、键盘调宽、动态数值范围和当前值说明
 - 后续可以把文件列表改为 `ul/li`，标题操作改为可聚焦按钮
 
 ### 9.9 状态和架构仍是小项目实现
@@ -476,6 +490,7 @@ Workspace 已完成第一轮职责拆分：
 - `Workspace.js`：UI 组合、依赖注入和文件选择等跨组件协调
 - `workspaceLayout.js`：侧栏状态、拖动会话、吸附判断、尺寸观察、shell/rail 显隐和 Grid CSS 变量更新
 - `workspaceLayoutConstraints.js`：布局尺寸常量、DocumentArea 最小宽度保护、动态最大宽度和响应式临时收起顺序
+- `workspaceLayoutStorage.js`：布局偏好版本、合法性校验和 localStorage 读写
 - `workspaceFileActions.js`：prompt、新建、删除、浏览器文件读取、Blob 下载和内容更新流程
 
 当前仍依赖可直接修改的全局数组、实时 ES Module 绑定和手动 render。等搜索、重命名、快捷键、Electron 文件系统等功能进入后，再考虑：
@@ -545,7 +560,7 @@ Workspace 已完成第一轮职责拆分：
 - 文件名清理
 - 导入错误提示和大小限制
 - 导出兼容性
-- 分割条键盘调整、动态 ARIA 数值和其他可访问性
+- 其他可访问性完善
 - 使用源码行号锚点实现编辑/阅读模式的双向滚动定位同步（已讨论，暂缓）
 
 ### 阶段 D：代码质量

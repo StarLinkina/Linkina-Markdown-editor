@@ -18,26 +18,6 @@ export function createDocumentArea({ onContentChange }) {
     editButtonElement.classList.add("document-mode-button");
     previewButtonElement.classList.add("document-mode-button");
 
-    //以下是对按钮状态的更新函数
-    function updateModeButtons() {
-        const isEditMode = hasSelectedFile && mode === "edit";
-        const isPreviewMode = hasSelectedFile && mode === "preview";
-
-        // 只有未选中文件时才禁用按钮
-        editButtonElement.disabled = !hasSelectedFile;
-        previewButtonElement.disabled = !hasSelectedFile;
-
-        editButtonElement.classList.toggle(
-            "document-mode-button--active",
-            isEditMode
-        );
-
-        previewButtonElement.classList.toggle(
-            "document-mode-button--active",
-            isPreviewMode
-        );
-
-    }
 
     toolbarElement.append(editButtonElement, previewButtonElement);
 
@@ -86,25 +66,48 @@ export function createDocumentArea({ onContentChange }) {
 
     //切换模式的函数
     function setMode(newMode) {
-        if (!hasSelectedFile) return;
+        if (!hasSelectedFile) {
+            editButtonElement.disabled = true;
+            previewButtonElement.disabled = true;
+
+            emptyStateElement.hidden = false;
+            editArea.element.hidden = true;
+            previewArea.element.hidden = true;
+
+            return;
+        }
 
         if (newMode !== "edit" && newMode !== "preview") {
             return;
         }
         mode = newMode;
 
-        //判断是否是编辑模式
+        //判断选中的是编辑模式还是预览模式
         const isEditMode = mode === "edit";
+        const isPreviewMode = mode === "preview";
 
+        //切换按钮状态
+        editButtonElement.classList.toggle(
+            "document-mode-button--active",
+            isEditMode
+        );
+        previewButtonElement.classList.toggle(
+            "document-mode-button--active",
+            isPreviewMode
+        );
+
+        editButtonElement.disabled = false;
+        previewButtonElement.disabled = false;
+
+        emptyStateElement.hidden = true;
         editArea.element.hidden = !isEditMode;
-        previewArea.element.hidden = isEditMode;
+        previewArea.element.hidden = !isPreviewMode;
 
-        //重载阅读区
-        if (!isEditMode) {
+        //render阅读区
+        if (isPreviewMode) {
             previewArea.render(content);
         }
 
-        updateModeButtons();
     }
 
     //赋予按钮改变状态
@@ -122,20 +125,6 @@ export function createDocumentArea({ onContentChange }) {
 
         editArea.render(markdownFile);
         previewArea.render(content);
-
-        emptyStateElement.hidden = hasSelectedFile;
-
-        //若未选中任何文件重载
-        if (!hasSelectedFile) {
-            //用空内容重载预览区，提高渲染效率
-            previewArea.render("");
-
-            editArea.element.hidden = true;
-            previewArea.element.hidden = true;
-            
-            updateModeButtons();
-            return;
-        }
 
         setMode(mode);
     }

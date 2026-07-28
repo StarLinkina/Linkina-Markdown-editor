@@ -41,5 +41,6 @@ export function updateFile(id, content) {
     markdownFile.content = content;
     markdownFile.updateTime = new Date().toISOString();
 
+    // 长期化存储
     saveFiles(markdownFiles);
 }
