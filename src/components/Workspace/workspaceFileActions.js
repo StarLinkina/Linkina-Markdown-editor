@@ -1,7 +1,7 @@
 import {
     addFile,
-    deleteFile,
-    importFile,
+    deleteFile as deleteMarkdownFile,
+    importFile as importMarkdownFile,
     selectFile,
     updateFile
 } from "../../services/fileService.js";
@@ -28,7 +28,7 @@ export function createWorkspaceFileActions({
     function deleteFile(id) {
         const isCurrentFile = currentFileId === id;
 
-        deleteFile(id);
+        deleteMarkdownFile(id);
 
         // 删除的是当前选中的文件
         if (isCurrentFile) {
@@ -43,7 +43,7 @@ export function createWorkspaceFileActions({
     // 外部导入文件
     async function importFile(sourceFile) {
         const content = await sourceFile.text();
-        const markdownFile = importFile(sourceFile.name, content);
+        const markdownFile = importMarkdownFile(sourceFile.name, content);
 
         onFileListRender(markdownFiles);
         onFileSelect(markdownFile);

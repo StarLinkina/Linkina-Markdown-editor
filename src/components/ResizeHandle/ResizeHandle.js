@@ -2,33 +2,31 @@ import "./ResizeHandle.css";
 
 export function createResizeHandle({
     side,
-    label,
     onResizeStart,
     onResize,
     onResizeEnd,
-    onResizeCancel,
-    onKeyboardResize,
-    onReset
+    onResizeCancel
 }) {
     const resizeHandleElement = document.createElement("div");
     resizeHandleElement.className = `resize-handle resize-handle--${side}`;
-    resizeHandleElement.setAttribute("role", "separator");
-    resizeHandleElement.title = label;
-    resizeHandleElement.tabIndex = 0;
 
     let activePointerId = null;
 
+    // 清除指针状态，用于拖动结束
     function clearPointerState(pointerId) {
         activePointerId = null;
         resizeHandleElement.classList.remove("resize-handle--dragging");
         document.body.classList.remove("sidebar-resize-active");
 
+        // 清除拖动条对指针的捕获
         if (resizeHandleElement.hasPointerCapture(pointerId)) {
             resizeHandleElement.releasePointerCapture(pointerId);
         }
     }
 
+    // 开始拖动
     resizeHandleElement.addEventListener("pointerdown", event => {
+        // 只响应主指针的鼠标左键操作
         if (
             activePointerId !== null ||
             event.isPrimary === false ||
@@ -43,6 +41,7 @@ export function createResizeHandle({
         onResizeStart(event.clientX);
     });
 
+    // 拖动中
     resizeHandleElement.addEventListener("pointermove", event => {
         if (event.pointerId !== activePointerId) return;
 
@@ -50,6 +49,7 @@ export function createResizeHandle({
         onResize(event.clientX);
     });
 
+    // 拖动结束
     resizeHandleElement.addEventListener("pointerup", event => {
         if (event.pointerId !== activePointerId) return;
 
@@ -62,6 +62,7 @@ export function createResizeHandle({
         }
     });
 
+    // 拖动中途取消
     resizeHandleElement.addEventListener("pointercancel", event => {
         if (event.pointerId !== activePointerId) return;
 
@@ -72,36 +73,6 @@ export function createResizeHandle({
         }
     });
 
-    resizeHandleElement.addEventListener("lostpointercapture", event => {
-        if (event.pointerId !== activePointerId) return;
-
-        try {
-            onResizeCancel();
-        } finally {
-            clearPointerState(event.pointerId);
-        }
-    });
-
-    resizeHandleElement.addEventListener("dblclick", event => {
-        event.preventDefault();
-        onReset();
-    });
-
-    resizeHandleElement.addEventListener("keydown", event => {
-        if (
-            event.key !== "ArrowLeft"
-            && event.key !== "ArrowRight"
-        ) {
-            return;
-        }
-
-        event.preventDefault();
-        onKeyboardResize({
-            key: event.key,
-            step: event.shiftKey ? 24 : 8
-        });
-    });
-
     function setSnapPreview(isActive) {
         resizeHandleElement.classList.toggle(
             "resize-handle--snap-preview",
@@ -109,30 +80,8 @@ export function createResizeHandle({
         );
     }
 
-    function setValue({
-        min,
-        max,
-        now,
-        text
-    }) {
-        resizeHandleElement.setAttribute(
-            "aria-valuemin",
-            String(Math.round(min))
-        );
-        resizeHandleElement.setAttribute(
-            "aria-valuemax",
-            String(Math.round(max))
-        );
-        resizeHandleElement.setAttribute(
-            "aria-valuenow",
-            String(Math.round(now))
-        );
-        resizeHandleElement.setAttribute("aria-valuetext", text);
-    }
-
     return {
         element: resizeHandleElement,
-        setSnapPreview,
-        setValue
+        setSnapPreview
     };
 }

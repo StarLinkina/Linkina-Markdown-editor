@@ -1,43 +1,31 @@
-export const SIDEBAR_MODE = Object.freeze({
+export const SIDEBAR_MODE = {
     EXPANDED: "expanded",
     COLLAPSED: "collapsed"
-});
+};
 
-export const WORKSPACE_LAYOUT_CONFIG = Object.freeze({
-    file: Object.freeze({
+export const WORKSPACE_LAYOUT_CONFIG = {
+    file: {
         defaultWidth: 260,
         minWidth: 200,
         maxWidth: 420,
         collapseThreshold: 176
-    }),
-    extend: Object.freeze({
+    },
+    extend: {
         defaultWidth: 320,
         minWidth: 240,
         maxWidth: 480,
         collapseThreshold: 216
-    }),
+    },
     documentMinWidth: 480,
     collapsedWidth: 48,
     resizeHandleWidth: 6,
     resizeHandleLineWidth: 1
-});
-
-const SIDEBAR_SIDES = Object.freeze(["file", "extend"]);
-
-function getSidebarsWidth(sidebarViews) {
-    return SIDEBAR_SIDES.reduce(
-        (totalWidth, side) => totalWidth + sidebarViews[side].width,
-        0
-    );
-}
+};
 
 function getAvailableSidebarWidth(workspaceWidth) {
-    const resizeHandlesWidth =
-        WORKSPACE_LAYOUT_CONFIG.resizeHandleWidth * 2;
-
     return workspaceWidth
         - WORKSPACE_LAYOUT_CONFIG.documentMinWidth
-        - resizeHandlesWidth;
+        - WORKSPACE_LAYOUT_CONFIG.resizeHandleWidth * 2;
 }
 
 export function resolveResponsiveSidebarViews({
@@ -46,34 +34,21 @@ export function resolveResponsiveSidebarViews({
     extendView
 }) {
     const sidebarViews = {
-        file: {
-            ...fileView,
-            isResponsiveCollapsed: false
-        },
-        extend: {
-            ...extendView,
-            isResponsiveCollapsed: false
-        }
+        file: { ...fileView, isResponsiveCollapsed: false },
+        extend: { ...extendView, isResponsiveCollapsed: false }
     };
-
-    if (!Number.isFinite(workspaceWidth) || workspaceWidth <= 0) {
-        return sidebarViews;
-    }
-
-    const availableSidebarWidth =
-        getAvailableSidebarWidth(workspaceWidth);
+    const availableWidth = getAvailableSidebarWidth(workspaceWidth);
 
     function hasEnoughSpace() {
-        return getSidebarsWidth(sidebarViews) <= availableSidebarWidth;
+        return sidebarViews.file.width + sidebarViews.extend.width
+            <= availableWidth;
     }
 
     function collapseTemporarily(side) {
         if (
             sidebarViews[side].width
             <= WORKSPACE_LAYOUT_CONFIG.collapsedWidth
-        ) {
-            return;
-        }
+        ) return;
 
         sidebarViews[side] = {
             ...sidebarViews[side],
@@ -83,13 +58,8 @@ export function resolveResponsiveSidebarViews({
         };
     }
 
-    if (!hasEnoughSpace()) {
-        collapseTemporarily("extend");
-    }
-
-    if (!hasEnoughSpace()) {
-        collapseTemporarily("file");
-    }
+    if (!hasEnoughSpace()) collapseTemporarily("extend");
+    if (!hasEnoughSpace()) collapseTemporarily("file");
 
     return sidebarViews;
 }
@@ -99,29 +69,11 @@ export function getSidebarDynamicMaxWidth({
     workspaceWidth,
     otherSidebarWidth
 }) {
-    const sidebarConfig = WORKSPACE_LAYOUT_CONFIG[side];
-    if (!sidebarConfig) return null;
-
-    if (
-        !Number.isFinite(workspaceWidth)
-        || workspaceWidth <= 0
-        || !Number.isFinite(otherSidebarWidth)
-    ) {
-        return sidebarConfig.maxWidth;
-    }
-
-    const resizeHandlesWidth =
-        WORKSPACE_LAYOUT_CONFIG.resizeHandleWidth * 2;
-    const availableWidth = workspaceWidth
-        - WORKSPACE_LAYOUT_CONFIG.documentMinWidth
-        - resizeHandlesWidth
+    const availableWidth = getAvailableSidebarWidth(workspaceWidth)
         - otherSidebarWidth;
 
     return Math.min(
-        sidebarConfig.maxWidth,
-        Math.max(
-            WORKSPACE_LAYOUT_CONFIG.collapsedWidth,
-            availableWidth
-        )
+        WORKSPACE_LAYOUT_CONFIG[side].maxWidth,
+        Math.max(WORKSPACE_LAYOUT_CONFIG.collapsedWidth, availableWidth)
     );
 }

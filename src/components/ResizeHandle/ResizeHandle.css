@@ -32,7 +32,6 @@
 }
 
 .resize-handle:hover::before,
-.resize-handle:focus-visible::before,
 .resize-handle--dragging::before {
     width: 2px;
     background-color: #94a3b8;
@@ -41,10 +40,6 @@
 .resize-handle--snap-preview::before {
     width: 3px;
     background-color: #64748b;
-}
-
-.resize-handle:focus-visible {
-    outline: none;
 }
 
 body.sidebar-resize-active,

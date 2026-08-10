@@ -3,147 +3,65 @@ import {
     WORKSPACE_LAYOUT_CONFIG
 } from "./workspaceLayoutConstraints.js";
 
-export const WORKSPACE_LAYOUT_STORAGE_KEY =
-    "LINKINA-WORKSPACE-LAYOUT";
+const WORKSPACE_LAYOUT_STORAGE_KEY = "LINKINA-WORKSPACE-LAYOUT";
 
-const WORKSPACE_LAYOUT_STORAGE_VERSION = 1;
-const SIDEBAR_SIDES = Object.freeze(["file", "extend"]);
-
-function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value));
-}
-
-function createDefaultSidebarState(sidebarConfig) {
+function createDefaultSidebarState(side) {
     return {
         mode: SIDEBAR_MODE.EXPANDED,
-        width: sidebarConfig.defaultWidth,
-        lastExpandedWidth: sidebarConfig.defaultWidth
+        width: WORKSPACE_LAYOUT_CONFIG[side].defaultWidth
     };
 }
 
-function normalizeWidth(value, sidebarConfig, fallbackWidth) {
-    if (typeof value !== "number" || !Number.isFinite(value)) {
-        return fallbackWidth;
-    }
-
-    return clamp(
-        value,
-        sidebarConfig.minWidth,
-        sidebarConfig.maxWidth
-    );
-}
-
-function normalizeSidebarState(side, storedSidebarState) {
-    const sidebarConfig = WORKSPACE_LAYOUT_CONFIG[side];
-    const defaultState = createDefaultSidebarState(sidebarConfig);
-
-    if (
-        !storedSidebarState
-        || typeof storedSidebarState !== "object"
-        || Array.isArray(storedSidebarState)
-    ) {
-        return defaultState;
-    }
-
-    const isValidMode = Object.values(SIDEBAR_MODE)
-        .includes(storedSidebarState.mode);
-    const width = normalizeWidth(
-        storedSidebarState.width,
-        sidebarConfig,
-        defaultState.width
-    );
-    const lastExpandedWidth = normalizeWidth(
-        storedSidebarState.lastExpandedWidth,
-        sidebarConfig,
-        width
-    );
+function normalizeSidebarState(side, storedState) {
+    const config = WORKSPACE_LAYOUT_CONFIG[side];
+    const width = Number.isFinite(storedState?.width)
+        ? Math.min(config.maxWidth, Math.max(config.minWidth, storedState.width))
+        : config.defaultWidth;
 
     return {
-        mode: isValidMode
-            ? storedSidebarState.mode
-            : defaultState.mode,
-        width,
-        lastExpandedWidth
+        mode: storedState?.mode === SIDEBAR_MODE.COLLAPSED
+            ? SIDEBAR_MODE.COLLAPSED
+            : SIDEBAR_MODE.EXPANDED,
+        width
     };
 }
 
 function createDefaultWorkspaceLayoutState() {
     return {
-        file: createDefaultSidebarState(
-            WORKSPACE_LAYOUT_CONFIG.file
-        ),
-        extend: createDefaultSidebarState(
-            WORKSPACE_LAYOUT_CONFIG.extend
-        )
+        file: createDefaultSidebarState("file"),
+        extend: createDefaultSidebarState("extend")
     };
 }
 
-export function loadWorkspaceLayoutState(
-    storage = globalThis.localStorage
-) {
-    if (!storage) {
-        return createDefaultWorkspaceLayoutState();
-    }
-
+export function loadWorkspaceLayoutState() {
     try {
-        const storedValue = storage.getItem(
-            WORKSPACE_LAYOUT_STORAGE_KEY
+        const storedLayout = JSON.parse(
+            localStorage.getItem(WORKSPACE_LAYOUT_STORAGE_KEY)
         );
 
-        if (!storedValue) {
-            return createDefaultWorkspaceLayoutState();
-        }
-
-        const storedLayout = JSON.parse(storedValue);
-        if (
-            !storedLayout
-            || typeof storedLayout !== "object"
-            || storedLayout.version !== WORKSPACE_LAYOUT_STORAGE_VERSION
-        ) {
-            return createDefaultWorkspaceLayoutState();
-        }
+        if (!storedLayout) return createDefaultWorkspaceLayoutState();
 
         return {
-            file: normalizeSidebarState(
-                "file",
-                storedLayout.file
-            ),
-            extend: normalizeSidebarState(
-                "extend",
-                storedLayout.extend
-            )
+            file: normalizeSidebarState("file", storedLayout.file),
+            extend: normalizeSidebarState("extend", storedLayout.extend)
         };
     } catch {
         return createDefaultWorkspaceLayoutState();
     }
 }
 
-export function saveWorkspaceLayoutState(
-    sidebarLayoutState,
-    storage = globalThis.localStorage
-) {
-    if (!storage) return false;
-
+export function saveWorkspaceLayoutState(sidebarLayoutState) {
     const storedLayout = {
-        version: WORKSPACE_LAYOUT_STORAGE_VERSION
+        file: { ...sidebarLayoutState.file },
+        extend: { ...sidebarLayoutState.extend }
     };
 
-    SIDEBAR_SIDES.forEach(side => {
-        storedLayout[side] = {
-            mode: sidebarLayoutState[side].mode,
-            width: sidebarLayoutState[side].width,
-            lastExpandedWidth:
-                sidebarLayoutState[side].lastExpandedWidth
-        };
-    });
-
     try {
-        storage.setItem(
+        localStorage.setItem(
             WORKSPACE_LAYOUT_STORAGE_KEY,
             JSON.stringify(storedLayout)
         );
-        return true;
     } catch {
-        return false;
+        // 存储不可用时保留当前会话内的布局状态。
     }
 }

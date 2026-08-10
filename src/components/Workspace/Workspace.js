@@ -15,12 +15,14 @@ export function createWorkspace() {
 
     const workspaceLayout = createWorkspaceLayout(workspaceElement);
 
+    // 选中文件，涉及两个区域的render
     function handleFileSelect(markdownFile) {
         selectFile(markdownFile.id);
         fileArea.render(markdownFiles, currentFileId);
         documentArea.render(markdownFile);
     }
 
+    // 文件相关操作
     const fileActions = createWorkspaceFileActions({
         onFileSelect: handleFileSelect,
         onFileListRender: (files, selectedFileId = null) => {
@@ -31,6 +33,7 @@ export function createWorkspace() {
         }
     });
 
+    //三个主区域
     const fileArea = createFileArea(markdownFiles, {
         onSelect: handleFileSelect,
         onCreate: fileActions.createFile,
@@ -43,7 +46,6 @@ export function createWorkspace() {
     const documentArea = createDocumentArea({
         onContentChange: fileActions.updateFileContent
     });
-    documentArea.clear();
 
     const extendArea = createExtendArea({
         onCollapse: () => workspaceLayout.collapse("extend")
