@@ -19,9 +19,9 @@
     border: 0;
     border-radius: 0;
     padding:
-        32px
-        max(24px, calc((100% - 920px) / 2))
-        64px;
+        var(--space-6)
+        max(var(--space-5), calc((100% - 920px) / 2))
+        var(--space-8);
 
     overflow-y: auto;
     overflow-x: auto;
@@ -30,14 +30,12 @@
 
     resize: none;
 
-    font-family:
-        "JetBrains Mono",
-        "Cascadia Code",
-        "SFMono-Regular",
-        Consolas,
-        "Liberation Mono",
-        monospace;
-    font-size: 15px;
+    color: var(--color-text-primary);
+    background-color: var(--color-background-document);
+    caret-color: var(--color-accent);
+
+    font-family: var(--font-family-code);
+    font-size: var(--font-size-editor);
     line-height: 1.75;
     letter-spacing: 0.01em;
     font-variant-ligatures: none;
@@ -46,8 +44,8 @@
 
 @media (max-width: 720px) {
     .edit-area-textarea {
-        padding: 24px 18px 48px;
-        font-size: 14px;
+        padding: var(--space-5) 18px var(--space-7);
+        font-size: var(--font-size-ui);
         line-height: 1.7;
     }
 }
@@ -57,11 +55,15 @@
 }
 
 .edit-area-textarea:disabled {
+    color: var(--color-text-disabled);
     cursor: not-allowed;
 }
 
+.edit-area-textarea::placeholder {
+    color: var(--color-text-muted);
+}
+
 .edit-area-textarea:focus-visible {
-    outline-width: 2px;
-    outline-style: solid;
+    outline: 2px solid var(--color-focus-ring);
     outline-offset: -2px;
 }

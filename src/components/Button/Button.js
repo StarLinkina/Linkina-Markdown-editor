@@ -11,13 +11,17 @@ export function createButton(options) {
     } else if (options.image) {
         buttonElement.classList.add("icon-button");
         buttonElement.title = options.alt ?? "";
+        buttonElement.setAttribute("aria-label", options.alt ?? "");
     }
 
     if (options.image) {
-        const iconElement = document.createElement("img");
+        const iconElement = document.createElement("span");
         iconElement.className = "button-icon";
-        iconElement.src = options.image;
-        iconElement.alt = options.alt ?? "";
+        iconElement.setAttribute("aria-hidden", "true");
+        buttonElement.style.setProperty(
+            "--button-icon-image",
+            `url("${options.image}")`
+        );
         buttonElement.append(iconElement);
     }
 

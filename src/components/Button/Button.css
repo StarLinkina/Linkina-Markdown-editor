@@ -5,11 +5,16 @@
 
     flex-shrink: 0;
 
-    height: 32px;
+    height: var(--size-control);
     border: 0;
+    border-radius: var(--radius-medium);
     padding: 0;
 
+    color: var(--color-text-secondary);
+    background-color: transparent;
+
     font: inherit;
+    font-size: var(--font-size-ui);
     line-height: 1;
 
     cursor: pointer;
@@ -18,40 +23,49 @@
 }
 
 .button:not(:disabled):hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-background-hover);
     transform: translateY(-1px);
 }
 
 .button:not(:disabled):active {
+    background-color: var(--color-background-active);
     transform: scale(0.97);
 }
 
 .button:disabled {
+    color: var(--color-text-disabled);
     cursor: not-allowed;
 }
 
 .button:focus-visible {
-    outline-width: 2px;
-    outline-style: solid;
+    outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
-}
-
-
-.button:active {
-    transform: scale(0.97);
 }
 
 .button-icon {
     width: 18px;
     height: 18px;
     display: block;
+
+    background-color: currentColor;
+
+    -webkit-mask-image: var(--button-icon-image);
+    mask-image: var(--button-icon-image);
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
-.text-button{
-    min-width: 32px;
-    padding: 0 12px;
-    gap: 8px;
-}   
+.text-button {
+    min-width: var(--size-control);
+    padding: 0 var(--space-3);
+    gap: var(--space-2);
+}
 
-.icon-button{
-    width: 32px;
+.icon-button {
+    width: var(--size-control);
 }

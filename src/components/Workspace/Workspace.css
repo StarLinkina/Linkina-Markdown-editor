@@ -16,6 +16,8 @@
     grid-template-rows: minmax(0, 1fr);
 
     overflow: hidden;
+
+    background-color: var(--color-background-app);
 }
 
 .workspace > * {
@@ -40,6 +42,6 @@
 }
 
 .workspace-sidebar--collapse-preview {
-    outline: 1px dashed #94a3b8;
+    outline: 1px dashed var(--color-accent);
     outline-offset: -2px;
 }

@@ -17,6 +17,7 @@ export function createFileArea(
     // 1. 文件功能栏
     const fileToolbarElement = document.createElement("nav");
     fileToolbarElement.className = "file-toolbar";
+    fileToolbarElement.setAttribute("aria-label", "文件操作");
 
     // 1.1 新建文件按钮
     const createFileButtonElement = createButton({ image: newFileIcon, alt: "新建文件" });
@@ -59,8 +60,9 @@ export function createFileArea(
 
 
     // 2. 文件展示列表
-    const fileListElement = document.createElement("div");
+    const fileListElement = document.createElement("ul");
     fileListElement.className = "file-list";
+    fileListElement.setAttribute("aria-label", "Markdown 文件");
 
     // 首次渲染文件列表
     markdownFiles.forEach(markdownFile => {

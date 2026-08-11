@@ -23,7 +23,7 @@
 
     width: var(--resize-handle-line-width);
 
-    background-color: #e5e7eb;
+    background-color: var(--color-border);
     transform: translateX(-50%);
 
     transition:
@@ -34,12 +34,12 @@
 .resize-handle:hover::before,
 .resize-handle--dragging::before {
     width: 2px;
-    background-color: #94a3b8;
+    background-color: var(--color-border-strong);
 }
 
 .resize-handle--snap-preview::before {
     width: 3px;
-    background-color: #64748b;
+    background-color: var(--color-accent);
 }
 
 body.sidebar-resize-active,

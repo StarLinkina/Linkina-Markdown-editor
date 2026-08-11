@@ -17,10 +17,13 @@
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
 
-    font-size: 16px;
+    font-size: var(--font-size-body);
     line-height: 1.75;
     overflow-wrap: anywhere;
     text-rendering: optimizeLegibility;
+
+    color: var(--color-text-primary);
+    background-color: var(--color-background-document);
 }
 
 .preview-area > :first-child {
@@ -42,6 +45,8 @@
 
     line-height: 1.3;
     text-wrap: balance;
+
+    color: var(--color-text-primary);
 }
 
 .preview-area h1 {
@@ -99,7 +104,11 @@
     margin-right: 0;
     border-left-width: 4px;
     border-left-style: solid;
-    padding-left: 1em;
+    border-left-color: var(--color-accent);
+    padding: 0.65em 1em;
+
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-muted);
 }
 
 .preview-area blockquote > :last-child {
@@ -107,8 +116,13 @@
 }
 
 .preview-area a {
+    color: var(--color-accent);
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.18em;
+}
+
+.preview-area a:hover {
+    color: var(--color-accent-hover);
 }
 
 .preview-area strong {
@@ -121,6 +135,7 @@
     border: 0;
     border-top-width: 1px;
     border-top-style: solid;
+    border-top-color: var(--color-border);
 }
 
 .preview-area img {
@@ -128,6 +143,8 @@
     max-width: 100%;
     height: auto;
     margin: 1.5em auto;
+
+    border-radius: var(--radius-medium);
 }
 
 .preview-area table {
@@ -143,12 +160,14 @@
 .preview-area td {
     border-width: 1px;
     border-style: solid;
+    border-color: var(--color-border);
     padding: 0.55em 0.8em;
     text-align: left;
     vertical-align: top;
 }
 
 .preview-area th {
+    background-color: var(--color-background-muted);
     font-weight: 650;
 }
 
@@ -156,18 +175,15 @@
 .preview-area pre,
 .preview-area kbd,
 .preview-area samp {
-    font-family:
-        "JetBrains Mono",
-        "Cascadia Code",
-        "SFMono-Regular",
-        Consolas,
-        "Liberation Mono",
-        monospace;
+    font-family: var(--font-family-code);
 }
 
 .preview-area :not(pre) > code {
-    border-radius: 4px;
+    border-radius: var(--radius-small);
     padding: 0.15em 0.35em;
+
+    color: var(--color-accent-hover);
+    background-color: var(--color-background-code);
 
     font-size: 0.875em;
     white-space: break-spaces;
@@ -177,7 +193,8 @@
     max-width: 100%;
     border-width: 1px;
     border-style: solid;
-    border-radius: 8px;
+    border-color: var(--color-border);
+    border-radius: var(--radius-large);
     padding: 1em 1.1em;
 
     overflow: auto;
@@ -186,6 +203,8 @@
     font-size: 0.875em;
     line-height: 1.65;
     tab-size: 4;
+
+    background-color: var(--color-background-code-block);
 }
 
 .preview-area pre code {
@@ -208,6 +227,24 @@
 .preview-area input[type="checkbox"] {
     margin: 0 0.45em 0.15em 0;
     vertical-align: middle;
+
+    accent-color: var(--color-accent);
+}
+
+.preview-area kbd {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    padding: 0.1em 0.4em;
+
+    color: var(--color-text-primary);
+    background-color: var(--color-background-muted);
+
+    font-size: 0.85em;
+}
+
+.preview-area mark {
+    color: var(--color-text-primary);
+    background-color: var(--color-accent-soft);
 }
 
 .preview-area details {
@@ -219,10 +256,71 @@
     font-weight: 600;
 }
 
+.preview-area .hljs-comment,
+.preview-area .hljs-quote {
+    color: var(--color-syntax-comment);
+}
+
+.preview-area .hljs-keyword,
+.preview-area .hljs-selector-tag,
+.preview-area .hljs-type {
+    color: var(--color-syntax-keyword);
+}
+
+.preview-area .hljs-string,
+.preview-area .hljs-doctag,
+.preview-area .hljs-regexp {
+    color: var(--color-syntax-string);
+}
+
+.preview-area .hljs-number,
+.preview-area .hljs-literal,
+.preview-area .hljs-symbol,
+.preview-area .hljs-bullet {
+    color: var(--color-syntax-number);
+}
+
+.preview-area .hljs-title,
+.preview-area .hljs-section,
+.preview-area .hljs-selector-id,
+.preview-area .hljs-selector-class {
+    color: var(--color-syntax-title);
+}
+
+.preview-area .hljs-variable,
+.preview-area .hljs-template-variable,
+.preview-area .hljs-attr,
+.preview-area .hljs-attribute {
+    color: var(--color-syntax-variable);
+}
+
+.preview-area .hljs-meta,
+.preview-area .hljs-built_in,
+.preview-area .hljs-builtin-name {
+    color: var(--color-syntax-meta);
+}
+
+.preview-area .hljs-addition {
+    color: var(--color-syntax-addition);
+}
+
+.preview-area .hljs-deletion {
+    color: var(--color-syntax-deletion);
+    background-color: var(--color-danger-soft);
+}
+
+.preview-area .hljs-emphasis {
+    font-style: italic;
+}
+
+.preview-area .hljs-strong {
+    font-weight: 700;
+}
+
 @media (max-width: 720px) {
     .preview-area {
         padding: 28px 18px 52px;
-        font-size: 15px;
+        font-size: var(--font-size-editor);
         line-height: 1.7;
     }
 

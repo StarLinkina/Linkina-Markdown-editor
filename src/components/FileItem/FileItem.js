@@ -7,7 +7,7 @@ import deleteFileIcon from "../../assets/delete-file/trash-2.svg";
 
 export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isActive = false} ) {
 
-    const fileItemElement = document.createElement("div");
+    const fileItemElement = document.createElement("li");
     fileItemElement.className = "file-item";
 
     //选中状态
@@ -15,15 +15,22 @@ export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isA
         fileItemElement.classList.add("file-item-active");
     }
 
-    // Markdown 文件标题
-    const fileTitleElement = document.createElement("p");
+    // 选择 Markdown 文件
+    const selectFileButtonElement = document.createElement("button");
+    selectFileButtonElement.type = "button";
+    selectFileButtonElement.className = "file-item__select-button";
+    selectFileButtonElement.title = markdownFile.title;
+
+    if (isActive) {
+        selectFileButtonElement.setAttribute("aria-current", "page");
+    }
+
+    const fileTitleElement = document.createElement("span");
     fileTitleElement.className = "file-item-title";
     fileTitleElement.textContent = markdownFile.title;
-    fileTitleElement.title = markdownFile.title;
-    fileItemElement.append(fileTitleElement);
+    selectFileButtonElement.append(fileTitleElement);
 
-    // 点击文件项时选中对应的 Markdown 文件
-    fileItemElement.addEventListener("click", () => {
+    selectFileButtonElement.addEventListener("click", () => {
         onSelect(markdownFile);
     });
 
@@ -33,15 +40,14 @@ export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isA
 
     // 删除操作
     const deleteButtonElement = createButton({ image: deleteFileIcon, alt: "删除文件"});
-    deleteButtonElement.addEventListener("click", (event) => {
-        event.stopPropagation();  //点击事件停止向上传递，防止传递到整体的点击上
+    deleteButtonElement.classList.add("file-item__delete-button");
+    deleteButtonElement.addEventListener("click", () => {
         onDelete(markdownFile.id);
     });
 
     // 导出操作
     const exportButtonElement = createButton({ image: exportFileIcon, alt: "导出文件" });
-    exportButtonElement.addEventListener("click", (event) => {
-        event.stopPropagation();
+    exportButtonElement.addEventListener("click", () => {
         onExport(markdownFile.id);
     });
 
@@ -49,7 +55,10 @@ export function createFileItem(markdownFile, { onSelect, onDelete, onExport, isA
         exportButtonElement,
         deleteButtonElement
     );
-    fileItemElement.append(fileActionsElement);
+    fileItemElement.append(
+        selectFileButtonElement,
+        fileActionsElement
+    );
 
     return fileItemElement;
 }

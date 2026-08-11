@@ -11,6 +11,8 @@ export function createDocumentArea({ onContentChange }) {
 
     const toolbarElement = document.createElement("div");
     toolbarElement.className = "document-toolbar";
+    toolbarElement.setAttribute("role", "group");
+    toolbarElement.setAttribute("aria-label", "文档模式");
 
     //两个按钮，切换编辑/阅读状态。
     const editButtonElement = createButton({ text: "编辑" });
@@ -69,6 +71,10 @@ export function createDocumentArea({ onContentChange }) {
         if (!hasSelectedFile) {
             editButtonElement.disabled = true;
             previewButtonElement.disabled = true;
+            editButtonElement.setAttribute("aria-pressed", "false");
+            previewButtonElement.setAttribute("aria-pressed", "false");
+            editButtonElement.classList.remove("document-mode-button--active");
+            previewButtonElement.classList.remove("document-mode-button--active");
 
             emptyStateElement.hidden = false;
             editArea.element.hidden = true;
@@ -95,6 +101,8 @@ export function createDocumentArea({ onContentChange }) {
             "document-mode-button--active",
             isPreviewMode
         );
+        editButtonElement.setAttribute("aria-pressed", String(isEditMode));
+        previewButtonElement.setAttribute("aria-pressed", String(isPreviewMode));
 
         editButtonElement.disabled = false;
         previewButtonElement.disabled = false;
