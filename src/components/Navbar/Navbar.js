@@ -5,14 +5,38 @@ import { THEME } from "../../utils/theme.js";
 
 import sunIcon from "../../assets/bright/sun.svg";
 import moonIcon from "../../assets/dark/moon.svg";
+import githubIcon from "../../assets/github/github.svg";
+
+const REPOSITORY_URL = "https://github.com/StarLinkina/Linkina-Markdown-editor";
 
 export function createNavbar({ initialTheme, onThemeToggle }) {
     const navbarElement = document.createElement("nav");
     navbarElement.className = "navbar";
     navbarElement.setAttribute("aria-label", "主导航");
 
+    const productNameElement = document.createElement("span");
+    productNameElement.className = "navbar__product-name";
+    productNameElement.textContent = "Linkina-Markdown-Editor";
+
     const navbarActionsElement = document.createElement("div");
     navbarActionsElement.className = "navbar__actions";
+
+    const repositoryLinkElement = document.createElement("a");
+    repositoryLinkElement.className = "button icon-button navbar__repository-link";
+    repositoryLinkElement.href = REPOSITORY_URL;
+    repositoryLinkElement.target = "_blank";
+    repositoryLinkElement.rel = "noopener noreferrer";
+    repositoryLinkElement.title = "打开项目仓库";
+    repositoryLinkElement.setAttribute("aria-label", "打开项目仓库");
+    repositoryLinkElement.style.setProperty(
+        "--button-icon-image",
+        `url("${githubIcon}")`
+    );
+
+    const repositoryIconElement = document.createElement("span");
+    repositoryIconElement.className = "button-icon";
+    repositoryIconElement.setAttribute("aria-hidden", "true");
+    repositoryLinkElement.append(repositoryIconElement);
 
     const themeButtonElement = createButton({
         image: moonIcon,
@@ -41,8 +65,14 @@ export function createNavbar({ initialTheme, onThemeToggle }) {
 
     renderTheme(initialTheme);
 
-    navbarActionsElement.append(themeButtonElement);
-    navbarElement.append(navbarActionsElement);
+    navbarActionsElement.append(
+        repositoryLinkElement,
+        themeButtonElement
+    );
+    navbarElement.append(
+        productNameElement,
+        navbarActionsElement
+    );
 
     return navbarElement;
 }

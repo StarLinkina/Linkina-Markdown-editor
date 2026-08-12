@@ -18,12 +18,30 @@
     z-index: 10;
 }
 
+.navbar__product-name {
+    min-width: 0;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    font-size: var(--font-size-editor);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
 .navbar__actions {
     display: flex;
     align-items: center;
 
+    flex: 0 0 auto;
+
     gap: var(--space-2);
     margin-left: auto;
+}
+
+.navbar__repository-link {
+    text-decoration: none;
 }
 
 .navbar__theme-button[aria-pressed="true"] {

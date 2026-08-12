@@ -16,8 +16,8 @@
 
 .document-toolbar {
     width: 100%;
-    height: var(--size-document-toolbar);
-    flex: 0 0 var(--size-document-toolbar);
+    height: var(--size-toolbar);
+    flex: 0 0 var(--size-toolbar);
 
     display: flex;
     align-items: center;

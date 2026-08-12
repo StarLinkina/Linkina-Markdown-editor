@@ -30,6 +30,7 @@
 
     overflow: hidden;
 
+    background-color: var(--color-background-sidebar);
     border-bottom: 1px solid var(--color-border);
 }
 

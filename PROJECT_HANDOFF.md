@@ -6,11 +6,11 @@
 
 - 项目目录：`D:\Project_VScode\Web\Linkina-Markdown-editor\Linkina-Markdown-editor`
 - 当前分支：`main`
-- 当前提交：`60e983d`（完成交互式侧栏的主体实现）
-- 文档更新日期：2026-08-10
-- 当前工作区包含尚未提交的侧栏代码精简：移除双击重置、键盘调宽及相关残留代码，并简化布局状态、约束计算和存储实现
-- `npm run build` 已通过：Vite 8.1.4 共转换 68 个模块
-- 当前阶段：核心文件业务、DocumentArea 第一轮体验和 Workspace 交互式布局已经完成；下一步优先处理主题样式、文件存储可靠性和其他交互细节
+- 当前提交：`295cf87`（初步完成亮暗主题和主题切换）
+- 文档更新日期：2026-08-12
+- 当前工作区包含尚未提交的主题视觉收尾和文档同步：Navbar 产品名与 GitHub 仓库入口、三栏工具栏边界统一、FileItem 组合状态修正、根目录的 Markdown 视觉测试文档，以及本交接文档和 TODO 更新
+- `npm run build` 已通过：Vite 8.1.4 共转换 72 个模块
+- 当前阶段：核心文件业务、DocumentArea 阅读体验、Workspace 交互式布局和亮暗主题已经完成；下一步优先处理文件存储可靠性
 
 ## 2. 项目定位
 
@@ -45,7 +45,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│ 顶部导航栏：左侧栏控制 / 标签区域 / 右侧栏控制     │
+│ 顶部导航栏：产品名 / GitHub 仓库 / 主题切换       │
 ├────────────┬──────────────────────────┬─────────────┤
 │ 文件区     │ 文档区                   │ 扩展区      │
 │            │ 编辑/阅读工具栏          │             │
@@ -57,7 +57,6 @@
 
 - 关键字搜索
 - PDF 导出
-- 明暗主题
 - 更完整的 Markdown 阅读样式
 - 文件重命名、排序等文件操作扩展
 - AI 辅助功能
@@ -86,7 +85,7 @@ Markdown 原文
 → PreviewArea.innerHTML
 ```
 
-目前按需注册了 plaintext、XML/HTML、CSS、JavaScript、TypeScript、JSON、Bash 和 Markdown。语法结构已经生成，但亮色/暗色代码主题仍等待主题系统统一处理。
+目前按需注册了 plaintext、XML/HTML、CSS、JavaScript、TypeScript、JSON、Bash 和 Markdown。亮色和暗色代码主题均使用项目自己的语义颜色变量，没有直接引入 highlight.js 的整套主题文件。
 
 常用命令：
 
@@ -106,7 +105,7 @@ src/
 ├─ assets/                  图标资源
 ├─ components/
 │  ├─ Button/               通用按钮工厂
-│  ├─ Navbar/               顶部导航栏
+│  ├─ Navbar/               产品名、GitHub 仓库入口和主题切换
 │  ├─ Workspace/
 │  │  ├─ Workspace.js       页面组合、依赖注入和文件选择协调
 │  │  ├─ workspaceLayout.js 侧栏状态、拖动会话、响应式观察和渲染控制
@@ -129,12 +128,15 @@ src/
 ├─ services/
 │  └─ fileService.js        文件增删改选及持久化调用
 ├─ utils/
-│  ├─ storage.js            localStorage 读写
+│  ├─ storage.js            Markdown 文件 localStorage 读写
+│  ├─ theme.js              主题初始化、切换和独立持久化
 │  └─ markdownRenderer.js   marked、代码高亮和 Markdown 转 HTML
 ├─ state.js                 全局文件列表和当前文件 ID
 ├─ main.js                  应用入口
-└─ style.css                全局基础样式和布局变量
+└─ style.css                全局基础样式、尺寸变量和亮暗主题变量
 ```
+
+根目录的 `MARKDOWN_VISUAL_TEST.md` 是手动导入应用的主题视觉测试素材，覆盖常见 Markdown 元素、宽表格、长代码和滚动场景，不属于应用运行时模块。
 
 主要组合关系：
 
@@ -222,6 +224,14 @@ Workspace 布局使用独立存储：
 - 不再维护存储版本和重复的 `lastExpandedWidth`
 - 响应式临时收起不写回该存储，不会覆盖用户偏好
 
+主题偏好也使用独立存储：
+
+- 存储键：`LINKINA-THEME`
+- 可选值：`light` 或 `dark`
+- 首次访问或没有有效存储值时跟随系统主题
+- 用户手动切换后保存明确选择
+- 存储不可用时仍允许当前会话切换主题
+
 ## 7. 已约定的命名和代码规范
 
 ### 7.1 文件对象命名
@@ -272,6 +282,7 @@ Workspace 布局使用独立存储：
 - Markdown 原文写入 textarea，文件标题使用 `textContent`
 - Markdown HTML 和 highlight.js 生成的 HTML 必须经过 DOMPurify 后才能写入 `innerHTML`
 - Markdown 解析与代码高亮集中在 `utils/markdownRenderer.js`，PreviewArea 只负责显示和清理最终结果
+- 组件颜色只引用全局语义变量，亮暗主题通过根元素的 `data-theme` 切换
 - 未经明确要求，不为了“架构高级”而引入框架或大规模状态库
 
 ### 7.6 HTML 语义
@@ -362,9 +373,13 @@ Workspace 布局使用独立存储：
 
 ### 8.5 样式和布局
 
-当前已完成第一轮：
+当前已完成：
 
-- 顶部 Navbar 基础布局
+- 亮色和暗色主题的背景、文字、边框、交互、危险状态和代码语法颜色变量
+- 首次访问跟随系统主题、手动切换和独立 localStorage 持久化
+- Navbar 左侧产品名，右侧 GitHub 仓库入口和当前主题图标按钮
+- 通用字号、代码字体、间距、圆角、控件高度和工具栏高度变量
+- 通用 Button 的悬停、按下、焦点、禁用状态及可继承颜色的 SVG 遮罩图标
 - Workspace 五列 Grid（左右侧区、两个分割条和中央文档区）
 - 左右侧区按钮收起/展开与 48px SidebarRail
 - 左右分割条拖动调整宽度、阈值吸附收起和反向拖动展开
@@ -374,18 +389,18 @@ Workspace 布局使用独立存储：
 - 布局偏好使用独立 localStorage 键保存，并在加载时规范化为 `{ mode, width }`
 - ResizeHandle 只负责 Pointer Events 和拖动状态，不包含双击重置、键盘调宽等额外业务
 - Workspace 已拆分为布局控制、布局约束、布局存储和文件业务四个模块，并完成一轮代码精简
-- FileArea 固定工具栏和可滚动文件列表
-- FileItem 标题省略、操作按钮悬停显示、当前项标记
+- FileArea 固定工具栏和可滚动的语义化 `ul/li` 文件列表
+- FileItem 使用原生按钮选择文件，支持 Tab、Enter 和空格键；标题省略、操作按钮悬停/聚焦显示、当前项标记
 - DocumentArea 纵向 Flex、工具栏排版和响应式间距
 - EditArea textarea 填满可用空间，并使用适合源码编辑的等宽字体、字号、行高和正文宽度
 - PreviewArea 独立滚动，并完成标题、段落、列表、引用、表格、图片、分隔线、行内代码和代码块的第一轮排版
 - DocumentArea 未选中文件空状态
-- 编辑/阅读模式按钮的视觉状态
-- PreviewArea 代码块结构样式、横向滚动和语法高亮类
+- 编辑/阅读模式按钮的视觉状态和 `aria-pressed` 状态语义
+- PreviewArea 的亮暗阅读样式、代码块结构、横向滚动和自定义语法高亮颜色
 - `100dvh`、`min-width: 0`、`min-height: 0` 等基础溢出处理
 - 删除和导出按钮已改用图标
-
-当前没有统一设置正文、背景、边框、链接、引用和代码语法颜色；这些颜色将与后续亮色/暗色主题系统一起完成。Navbar、FileArea、ExtendArea 和整体主题仍未完成。
+- FileArea、DocumentArea 和 ExtendArea 的工具栏高度、背景和底部边界保持一致
+- 根目录提供 `MARKDOWN_VISUAL_TEST.md`，用于手动检查亮暗主题和 Markdown 元素
 
 ## 9. 当前已知问题和技术债
 
@@ -472,21 +487,21 @@ Blob URL 已改为在下一轮事件循环撤销，避免下载尚未开始就�
 
 DocumentArea 当前还会在 `render(markdownFile)` 中先执行一次 `previewArea.render(content)`，阅读模式下 `setMode(mode)` 随后会再次渲染。接入代码高亮后，这个重复渲染的成本更高，后续应调整为只在真正显示阅读模式时渲染预览。
 
-### 9.7 Navbar 和 ExtendArea 仍是占位功能
+### 9.7 ExtendArea 仍是占位功能
 
-- Navbar 当前保留空的顶部布局，侧栏控制已经移动到 FileArea、ExtendArea 和 SidebarRail
-- ExtendArea 目前是空容器
+- Navbar 已包含产品名、GitHub 仓库入口和主题切换，不承担文件操作或侧栏控制
+- ExtendArea 目前仍是空容器，只完成了主题、工具栏和布局样式
 
-这些属于当前样式与交互阶段的正常未完成项。
+ExtendArea 等待搜索、目录或其他明确扩展功能进入后再填充，不应为了视觉完整添加没有业务含义的占位内容。
 
-### 9.8 可访问性和语义仍可继续完善
+### 9.8 ResizeHandle 可访问性暂缓
 
-- FileItem 外层是可点击的 `div`，键盘无法直接选择
-- 通用 Button 已显式设置 `type="button"`
-- 图标按钮已有 `aria-label` 和 `title`，这是正确的
-- 编辑/阅读按钮已有视觉激活状态，但尚未补充 `aria-pressed` 或等价的 tab 语义
-- ResizeHandle 当前只支持指针拖动，没有 separator 语义、焦点入口和键盘调宽；如需补充，应作为明确的可访问性任务单独设计
-- 后续可以把文件列表改为 `ul/li`，标题操作改为可聚焦按钮
+- FileItem 已改为 `ul/li`，文件选择使用原生按钮，并通过 `aria-current="page"` 标记当前文件
+- 编辑/阅读按钮和主题按钮已使用 `aria-pressed` 表达状态
+- 图标按钮已有 `aria-label` 和 `title`
+- ResizeHandle 当前仍只支持指针拖动，没有 separator 语义、焦点入口和键盘调宽
+
+ResizeHandle 的键盘操作曾在布局精简阶段明确移除。如需恢复，应作为独立可访问性任务设计，而不是在其他任务中顺手加入。
 
 ### 9.9 状态和架构仍是小项目实现
 
@@ -545,14 +560,14 @@ Workspace 已完成第一轮职责拆分：
 
 ## 11. 建议的后续阶段
 
-### 阶段 A：完成当前样式与布局
+### 已完成：主题与样式
 
-- 在主题阶段完成整体色彩、边框和背景
-- 为 Markdown 阅读区和代码高亮设计亮色/暗色主题
-- 完善 FileItem 的键盘聚焦和语义
-- 在后续移动端阶段为低于桌面五列最小宽度的窗口设计覆盖式抽屉布局
+- 亮暗主题、Markdown 阅读样式、代码高亮颜色和主题切换已经完成
+- Navbar、FileArea、FileItem、ExtendArea 和布局边界已经完成当前阶段的视觉整理
+- FileItem 键盘聚焦、文件列表语义和编辑/阅读模式状态语义已经完成
+- 移动端覆盖式抽屉布局仍属于已讨论并暂缓事项
 
-### 阶段 B：存储可靠性
+### 下一阶段：存储可靠性
 
 - localStorage 防抖保存
 - 页面关闭前 flush
@@ -561,7 +576,7 @@ Workspace 已完成第一轮职责拆分：
 - 加载数据校验
 - UUID
 
-### 阶段 C：交互完善
+### 后续阶段：交互完善
 
 - 文件重命名
 - 文件名清理
@@ -570,7 +585,7 @@ Workspace 已完成第一轮职责拆分：
 - 其他可访问性完善
 - 使用源码行号锚点实现编辑/阅读模式的双向滚动定位同步（已讨论，暂缓）
 
-### 阶段 D：代码质量
+### 后续阶段：代码质量
 
 - 减少重复 render
 - 按功能增长继续拆分 Workspace（侧栏布局和文件操作流程已完成第一轮拆分）
@@ -578,7 +593,7 @@ Workspace 已完成第一轮职责拆分：
 - 增加 lint/format
 - 更新 README、包名、页面标题和 favicon
 
-### 阶段 E：高级功能和桌面化
+### 长期阶段：高级功能和桌面化
 
 - 搜索
 - PDF 导出
@@ -609,7 +624,12 @@ Workspace 已完成第一轮职责拆分：
 18. 左右分割条可以拖动调宽、低于阈值吸附收起，并能从边栏向外拖动展开
 19. 窄窗口下优先临时收起 ExtendArea，必要时再临时收起 FileArea，且不会覆盖用户偏好
 20. 刷新页面后手动设置的侧栏模式和宽度能够恢复
-21. `npm run build` 通过
+21. 首次访问且没有主题偏好时跟随系统主题，手动切换后刷新仍恢复用户选择
+22. 亮暗主题下 Navbar、文件项、模式按钮和所有图标保持清晰
+23. 亮暗主题下 Markdown 标题、链接、引用、表格、行内代码和代码块保持可读
+24. FileItem 可以通过 Tab 聚焦，并使用 Enter 或空格选择文件
+25. GitHub 仓库入口在新标签页打开正确地址
+26. `npm run build` 通过
 
 ## 13. 最近对话更新摘要
 
@@ -640,6 +660,21 @@ Workspace 已完成第一轮职责拆分：
 5. 根据当前产品范围主动移除双击重置、键盘调宽、动态 ARIA 数值等未要求功能及其残留代码。
 6. 删除 `lastExpandedWidth`、存储版本、过量兼容分支和无效样式状态，将三份核心布局文件从约 756 行缩减到约 448 行。
 7. 最新一次生产构建、布局约束检查和旧布局存储兼容检查均已通过。
+
+### 2026-08-11～2026-08-12：亮暗主题与界面视觉
+
+1. 建立背景、文字、边框、交互、危险状态和代码语法颜色的全局语义变量，并完成亮色与暗色两套取值。
+2. 新增 `utils/theme.js`；没有有效用户偏好时跟随系统主题，手动切换后使用独立的 `LINKINA-THEME` 保存。
+3. 通用 Button 的 SVG 图标改为 CSS 遮罩并继承 `currentColor`，解决暗色主题下原始黑色图标不可见的问题。
+4. 统一通用字号、代码字体、间距、圆角、控件高度和工具栏高度变量，并应用到现有组件。
+5. 完成 Navbar、FileArea、DocumentArea、ExtendArea、SidebarRail 和 ResizeHandle 的亮暗主题与布局边界。
+6. Navbar 左侧显示 `Linkina-Markdown-Editor`，右侧提供 GitHub 仓库入口和主题按钮；主题图标显示当前主题，悬停文字说明切换目标。
+7. FileItem 改为语义化 `ul/li` 和原生文件选择按钮，支持键盘选择；编辑/阅读按钮补充 `aria-pressed`。
+8. 完成 Markdown 链接、引用、表格、任务列表、行内代码、代码块和 highlight.js 语法类的亮暗配色。
+9. 新增 `MARKDOWN_VISUAL_TEST.md`，用于手动导入并检查常见 Markdown 元素、长代码、宽表格和独立滚动。
+10. 用户已完成一轮手动视觉检查，未发现明显问题；最新生产构建转换 72 个模块并通过。
+
+注意：上述第 6、9 项以及部分三栏边界收尾当前仍在工作区，尚未提交；交接时应同时查看 `git status` 和实际代码。
 
 ## 14. 给下一次对话的工作准则
 

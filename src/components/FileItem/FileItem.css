@@ -95,6 +95,12 @@
     font-weight: 600;
 }
 
+.file-item-active:hover,
+.file-item-active:focus-within {
+    color: var(--color-accent-hover);
+    background-color: var(--color-accent-soft);
+}
+
 .file-item-active::before {
     content: "";
 
