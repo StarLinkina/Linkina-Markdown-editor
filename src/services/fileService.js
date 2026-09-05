@@ -1,12 +1,15 @@
 import { markdownFiles, setCurrentFileId } from "../state.js";
-import { saveFiles } from "../utils/storage.js";
+import {
+    saveFilesImmediately,
+    scheduleFilesSave
+} from "./filePersistence.js";
 import { createMarkdownFile } from "../models/markdownFile.js";
 
 export function addFile(title) {
     // 创建 Markdown 文件实例
     const markdownFile = createMarkdownFile(title);
     markdownFiles.push(markdownFile);
-    saveFiles(markdownFiles);
+    saveFilesImmediately(markdownFiles);
     return markdownFile;
 }
 
@@ -16,7 +19,7 @@ export function deleteFile(id) {
     if (index === -1) return;
 
     markdownFiles.splice(index, 1);
-    saveFiles(markdownFiles);
+    saveFilesImmediately(markdownFiles);
 }
 
 export function importFile(name, content) {
@@ -25,7 +28,7 @@ export function importFile(name, content) {
     const markdownFile = createMarkdownFile(title);
     markdownFile.content = content;
     markdownFiles.push(markdownFile);
-    saveFiles(markdownFiles);
+    saveFilesImmediately(markdownFiles);
     return markdownFile;
 }
 
@@ -41,6 +44,5 @@ export function updateFile(id, content) {
     markdownFile.content = content;
     markdownFile.updateTime = new Date().toISOString();
 
-    // 长期化存储
-    saveFiles(markdownFiles);
+    scheduleFilesSave(markdownFiles);
 }

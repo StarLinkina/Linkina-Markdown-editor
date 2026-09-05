@@ -6,11 +6,11 @@
 
 - 项目目录：`D:\Project_VScode\Web\Linkina-Markdown-editor\Linkina-Markdown-editor`
 - 当前分支：`main`
-- 当前提交：`295cf87`（初步完成亮暗主题和主题切换）
-- 文档更新日期：2026-08-12
-- 当前工作区包含尚未提交的主题视觉收尾和文档同步：Navbar 产品名与 GitHub 仓库入口、三栏工具栏边界统一、FileItem 组合状态修正、根目录的 Markdown 视觉测试文档，以及本交接文档和 TODO 更新
-- `npm run build` 已通过：Vite 8.1.4 共转换 72 个模块
-- 当前阶段：核心文件业务、DocumentArea 阅读体验、Workspace 交互式布局和亮暗主题已经完成；下一步优先处理文件存储可靠性
+- 当前提交：`69ed478`（完成Navbar完善，以及视觉统一，提供一个测试文档）
+- 文档更新日期：2026-09-05
+- 当前工作区包含尚未提交的文件存储可靠性实现和文档同步：加载数据校验、UUID、400ms 防抖、`pagehide` flush、保存状态反馈、错误分类、失败重试和内存数据导出
+- `npm run build` 已通过：Vite 8.1.4 共转换 73 个模块
+- 当前阶段：核心文件业务、DocumentArea 阅读体验、Workspace 交互式布局、亮暗主题和文件存储可靠性已经完成；下一步处理文件交互完善
 
 ## 2. 项目定位
 
@@ -126,9 +126,10 @@ src/
 ├─ models/
 │  └─ markdownFile.js       Markdown 文件数据工厂
 ├─ services/
-│  └─ fileService.js        文件增删改选及持久化调用
+│  ├─ fileService.js        文件增删改选及持久化调用
+│  └─ filePersistence.js    保存防抖、dirty 状态、flush、重试和状态订阅
 ├─ utils/
-│  ├─ storage.js            Markdown 文件 localStorage 读写
+│  ├─ storage.js            Markdown 文件校验、规范化、安全读写和错误分类
 │  ├─ theme.js              主题初始化、切换和独立持久化
 │  └─ markdownRenderer.js   marked、代码高亮和 Markdown 转 HTML
 ├─ state.js                 全局文件列表和当前文件 ID
@@ -167,9 +168,15 @@ main
 → workspaceFileActions
 → fileService
 → state 中的 markdownFiles
+→ filePersistence
 → storage/localStorage
 → 注入的 Workspace 协调回调
 → FileArea / DocumentArea 手动调用 render()
+
+filePersistence 保存状态
+→ Workspace 订阅
+→ DocumentArea 显示 saving / saved / error
+→ 保存失败时重试或导出当前内存文件
 
 侧栏操作
 → SidebarRail 或 ResizeHandle
@@ -188,7 +195,7 @@ main
 
 ```js
 {
-    id: Date.now(),
+    id: crypto.randomUUID(),
     title: "",
     content: "",
     createTime: "ISO 时间字符串",
@@ -196,12 +203,13 @@ main
 }
 ```
 
-当前 `id` 是数字，由 `Date.now()` 产生。
+新文件使用字符串 UUID。加载时继续兼容已有的正整数 ID；缺失、非法或重复 ID 会生成新 UUID，不强制迁移有效的旧 ID。
 
 ### 6.2 全局状态
 
 `state.js` 导出：
 
+- `fileLoadResult`：文件加载状态、修复统计和错误信息
 - `markdownFiles`：从 localStorage 读取的文件数组
 - `currentFileId`：当前选中文件 ID
 - `setCurrentFileId(id)`：更新当前选中状态
@@ -212,9 +220,15 @@ main
 
 - 存储键：`MARKDOWN-FILES`
 - 当前存储值：`markdownFiles` 数组的 JSON 字符串
-- 添加、删除、导入、内容编辑都会调用保存
+- 添加、删除和导入立即保存；内容编辑只对 localStorage 写入做 400ms 防抖
+- 内存中的正文和 `updateTime` 在每次输入时立即更新
+- `pagehide` 会 flush 尚未写入的修改
+- 加载时逐项校验并规范化文件字段，无法识别的条目会被忽略
+- 保存过程提供 `saving`、`saved` 和 `error` 状态
+- 保存失败时保留内存数据，区分容量、权限、序列化和未知错误，并支持重试或导出当前文件
+- 整份存储读取失败时阻止本页写入，避免用空数组覆盖原始数据
 
-当前只是基础实现，尚未加入防抖、容量错误处理、数据结构校验或版本迁移。
+当前尚未增加存储结构版本号和迁移机制。
 
 Workspace 布局使用独立存储：
 
@@ -278,7 +292,8 @@ Workspace 布局使用独立存储：
 - 组件负责创建 DOM、绑定交互、暴露 `render()` 等接口
 - Workspace 负责协调组件和业务
 - fileService 负责 Markdown 文件增删改选
-- storage 只负责持久化
+- filePersistence 负责保存防抖、dirty、flush、重试和状态发布
+- storage 负责边界数据校验、localStorage 安全读写和错误分类
 - Markdown 原文写入 textarea，文件标题使用 `textContent`
 - Markdown HTML 和 highlight.js 生成的 HTML 必须经过 DOMPurify 后才能写入 `innerHTML`
 - Markdown 解析与代码高亮集中在 `utils/markdownRenderer.js`，PreviewArea 只负责显示和清理最终结果
@@ -352,13 +367,19 @@ Workspace 布局使用独立存储：
 
 ### 8.3 持久化
 
-已完成基础 localStorage：
+已完成文件存储可靠性：
 
 - 启动时加载文件
-- 添加、删除、导入、编辑后保存
-- JSON 解析失败时返回空数组
-
-尚未完成可靠性和性能增强，详见“已知问题”。
+- 加载数据逐项校验和字段规范化
+- 新文件使用 UUID，同时兼容已有数字 ID
+- 内容编辑时立即更新内存，只对 localStorage 写入做 400ms 防抖
+- 添加、删除、导入立即保存，并吞并已有待保存任务
+- `pagehide` 时提交尚未写入的内容
+- 保存状态显示 `saving`、`saved` 和 `error`
+- 区分容量不足、存储权限受限、序列化失败和未知错误
+- 保存失败时保留 dirty 状态和内存内容，支持重试或导出当前文件
+- 整份存储读取失败时显示持续错误并阻止覆盖原始数据
+- 保存调度已从 `storage.js` 拆分到 `services/filePersistence.js`
 
 ### 8.4 命名重构
 
@@ -406,55 +427,7 @@ Workspace 布局使用独立存储：
 
 以下是当前代码仍然存在的问题。部分已经讨论过，但没有实现。
 
-### 9.1 localStorage 每次输入都同步保存
-
-当前：
-
-```text
-textarea input
-→ updateFile()
-→ JSON.stringify(markdownFiles)
-→ localStorage.setItem()
-```
-
-localStorage 是同步 API。文件变多或内容变大后可能导致输入卡顿。
-
-已经约定的实现方向：
-
-- 每次输入立即更新内存中的 `markdownFile.content`
-- 只对 localStorage 写入做 300～500ms 防抖
-- 添加、删除、导入仍然立即保存
-- 页面 `pagehide` 时执行待保存内容
-- 提供 `saving / saved / error` 状态
-
-注意：不要对整个 `updateFile()` 做防抖，否则切换文件时可能把旧文件内容写到新文件。
-
-### 9.2 localStorage 失败处理不足
-
-当前问题：
-
-- `setItem()` 没有 `try...catch`
-- `getItem()` 位于 `try...catch` 外
-- 存储空间不足或权限受限时可能直接报错
-- 保存失败后用户不会收到提示
-- 加载时只验证最外层是不是数组，没有验证每个文件对象
-
-建议后续加入：
-
-- `saveFiles()` 返回明确结果
-- 区分 `QuotaExceededError`、`SecurityError`
-- 保存失败时保留内存内容，并显示持续提示
-- 支持手动重试或导出
-- 对读取数据逐项校验和规范化
-- 将来增加存储结构版本号
-
-### 9.3 ID 仍使用 `Date.now()`
-
-快速创建或批量导入时理论上可能产生重复 ID。
-
-后续可以使用 `crypto.randomUUID()`，同时兼容 localStorage 中已有的数字 ID。
-
-### 9.4 导入错误没有反馈
+### 9.1 导入错误没有反馈
 
 `FileArea` 使用 `try...finally` 清空 input，但没有捕获和显示读取失败。
 
@@ -465,7 +438,7 @@ localStorage 是同步 API。文件变多或内容变大后可能导致输入卡
 - localStorage 容量预检查
 - 非 UTF-8 文本编码处理
 
-### 9.5 导出文件名兼容性仍可增强
+### 9.2 导出文件名兼容性仍可增强
 
 Blob URL 已改为在下一轮事件循环撤销，避免下载尚未开始就提前失效。
 
@@ -475,7 +448,7 @@ Blob URL 已改为在下一轮事件循环撤销，避免下载尚未开始就�
 - 末尾空格或句点
 - 用户标题已经包含 `.md` 时可能产生 `.md.md`
 
-### 9.6 部分渲染存在重复
+### 9.3 部分渲染存在重复
 
 创建和导入文件时：
 
@@ -487,14 +460,14 @@ Blob URL 已改为在下一轮事件循环撤销，避免下载尚未开始就�
 
 DocumentArea 当前还会在 `render(markdownFile)` 中先执行一次 `previewArea.render(content)`，阅读模式下 `setMode(mode)` 随后会再次渲染。接入代码高亮后，这个重复渲染的成本更高，后续应调整为只在真正显示阅读模式时渲染预览。
 
-### 9.7 ExtendArea 仍是占位功能
+### 9.4 ExtendArea 仍是占位功能
 
 - Navbar 已包含产品名、GitHub 仓库入口和主题切换，不承担文件操作或侧栏控制
 - ExtendArea 目前仍是空容器，只完成了主题、工具栏和布局样式
 
 ExtendArea 等待搜索、目录或其他明确扩展功能进入后再填充，不应为了视觉完整添加没有业务含义的占位内容。
 
-### 9.8 ResizeHandle 可访问性暂缓
+### 9.5 ResizeHandle 可访问性暂缓
 
 - FileItem 已改为 `ul/li`，文件选择使用原生按钮，并通过 `aria-current="page"` 标记当前文件
 - 编辑/阅读按钮和主题按钮已使用 `aria-pressed` 表达状态
@@ -503,7 +476,7 @@ ExtendArea 等待搜索、目录或其他明确扩展功能进入后再填充，
 
 ResizeHandle 的键盘操作曾在布局精简阶段明确移除。如需恢复，应作为独立可访问性任务设计，而不是在其他任务中顺手加入。
 
-### 9.9 状态和架构仍是小项目实现
+### 9.6 状态和架构仍是小项目实现
 
 当前 `markdownFiles` 数组可以被模块直接修改，页面依靠 Workspace 手动重新渲染。
 
@@ -520,11 +493,10 @@ Workspace 已完成第一轮职责拆分：
 - state 私有化和 getter
 - 轻量订阅机制
 - 独立的 browserFileService
-- 更明确的保存状态管理
 
 暂时不要为此引入大型状态库。
 
-### 9.10 工程配置仍未完善
+### 9.7 工程配置仍未完善
 
 - `package.json` 名称仍是 `npx`
 - 页面 `<title>` 仍是 `npx`
@@ -532,7 +504,7 @@ Workspace 已完成第一轮职责拆分：
 - 没有测试、lint 和格式化脚本
 - README 只记录了简要目标，没有同步当前实际完成度
 
-### 9.11 编辑区与阅读区尚未按源码位置同步滚动
+### 9.8 编辑区与阅读区尚未按源码位置同步滚动
 
 当前 EditArea 和 PreviewArea 是两个独立滚动容器。用户在编辑区滚动后切换到阅读模式，预览区仍保留自己的滚动位置，因此可能看不到刚才正在编辑的内容。
 
@@ -567,7 +539,7 @@ Workspace 已完成第一轮职责拆分：
 - FileItem 键盘聚焦、文件列表语义和编辑/阅读模式状态语义已经完成
 - 移动端覆盖式抽屉布局仍属于已讨论并暂缓事项
 
-### 下一阶段：存储可靠性
+### 已完成：存储可靠性
 
 - localStorage 防抖保存
 - 页面关闭前 flush
@@ -576,7 +548,7 @@ Workspace 已完成第一轮职责拆分：
 - 加载数据校验
 - UUID
 
-### 后续阶段：交互完善
+### 下一阶段：交互完善
 
 - 文件重命名
 - 文件名清理
@@ -629,7 +601,11 @@ Workspace 已完成第一轮职责拆分：
 23. 亮暗主题下 Markdown 标题、链接、引用、表格、行内代码和代码块保持可读
 24. FileItem 可以通过 Tab 聚焦，并使用 Enter 或空格选择文件
 25. GitHub 仓库入口在新标签页打开正确地址
-26. `npm run build` 通过
+26. 连续输入时显示“保存中”，停止输入约 400ms 后显示“已保存”
+27. 新建、删除或导入会取消待执行的防抖并立即保存最新文件数组
+28. 保存失败时内容仍保留在内存，错误持续显示并支持重试或导出当前文件
+29. 整份存储读取失败时显示错误，并且不会被当前页面自动覆盖
+30. `npm run build` 通过
 
 ## 13. 最近对话更新摘要
 
@@ -672,9 +648,19 @@ Workspace 已完成第一轮职责拆分：
 7. FileItem 改为语义化 `ul/li` 和原生文件选择按钮，支持键盘选择；编辑/阅读按钮补充 `aria-pressed`。
 8. 完成 Markdown 链接、引用、表格、任务列表、行内代码、代码块和 highlight.js 语法类的亮暗配色。
 9. 新增 `MARKDOWN_VISUAL_TEST.md`，用于手动导入并检查常见 Markdown 元素、长代码、宽表格和独立滚动。
-10. 用户已完成一轮手动视觉检查，未发现明显问题；最新生产构建转换 72 个模块并通过。
+10. 用户已完成一轮手动视觉检查，未发现明显问题；该阶段生产构建转换 72 个模块并通过。
 
-注意：上述第 6、9 项以及部分三栏边界收尾当前仍在工作区，尚未提交；交接时应同时查看 `git status` 和实际代码。
+### 2026-08-20～2026-09-05：文件存储可靠性
+
+1. 加载 `MARKDOWN-FILES` 时逐项校验文件对象，规范化 ID、标题、正文和时间字段，并统计修复与丢弃数量。
+2. 新文件、导入文件以及无效或重复 ID 的修复统一使用 `crypto.randomUUID()`，同时保留有效的旧数字 ID。
+3. 正文输入立即更新内存，只将 localStorage 写入延迟 400ms；新建、删除和导入仍立即保存。
+4. `pagehide` 会 flush 尚未写入的修改；立即保存会取消已有定时器并保存当前完整数组。
+5. `storage.js` 负责安全读写和错误分类，`filePersistence.js` 负责防抖、dirty、flush、重试和状态订阅。
+6. DocumentArea 工具栏显示“保存中”“已保存”和持续错误；保存失败时可以重试或导出当前内存文件。
+7. 保存失败不会清除 dirty 或内存数据；整份存储读取失败时阻止本页写入，避免覆盖原始数据。
+8. 隔离逻辑检查覆盖成功、容量不足、权限受限、序列化失败、重试恢复和加载错误写入保护；本地界面检查确认状态转换正确。
+9. 最新生产构建转换 73 个模块并通过。
 
 ## 14. 给下一次对话的工作准则
 

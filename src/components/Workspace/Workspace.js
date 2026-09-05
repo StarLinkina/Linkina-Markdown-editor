@@ -1,6 +1,10 @@
 import "./Workspace.css";
 
 import { selectFile } from "../../services/fileService.js";
+import {
+    retryPendingFilesSave,
+    subscribeToFilePersistence
+} from "../../services/filePersistence.js";
 
 import { markdownFiles, currentFileId } from "../../state.js";
 import { createFileArea } from "../FileArea";
@@ -44,8 +48,12 @@ export function createWorkspace() {
     });
 
     const documentArea = createDocumentArea({
-        onContentChange: fileActions.updateFileContent
+        onContentChange: fileActions.updateFileContent,
+        onSaveRetry: retryPendingFilesSave,
+        onExportCurrentFile: () => fileActions.exportFile(currentFileId)
     });
+
+    subscribeToFilePersistence(documentArea.renderPersistenceState);
 
     const extendArea = createExtendArea({
         onCollapse: () => workspaceLayout.collapse("extend")
