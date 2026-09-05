@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>LME</title>
+  <rect width="64" height="64" rx="14" fill="#5b55d6" />
+  <g fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 20v24h10" />
+    <path d="M25 44V20l7 12 7-12v24" />
+    <path d="M55 20h-9v24h9M46 32h8" />
+  </g>
+</svg>
