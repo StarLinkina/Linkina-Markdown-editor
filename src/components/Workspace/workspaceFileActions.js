@@ -20,7 +20,6 @@ export function createWorkspaceFileActions({
 
         const markdownFile = addFile(title);
 
-        onFileListRender(markdownFiles);
         onFileSelect(markdownFile);
     }
 
@@ -45,7 +44,6 @@ export function createWorkspaceFileActions({
         const content = await sourceFile.text();
         const markdownFile = importMarkdownFile(sourceFile.name, content);
 
-        onFileListRender(markdownFiles);
         onFileSelect(markdownFile);
     }
 

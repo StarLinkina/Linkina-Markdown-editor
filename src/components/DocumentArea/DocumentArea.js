@@ -258,7 +258,6 @@ export function createDocumentArea({
         content = markdownFile?.content ?? "";
 
         editArea.render(markdownFile);
-        previewArea.render(content);
 
         setMode(mode);
         renderPersistenceState(persistenceState);
