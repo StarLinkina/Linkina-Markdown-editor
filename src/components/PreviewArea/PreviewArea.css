@@ -166,6 +166,16 @@
     vertical-align: top;
 }
 
+.preview-area th[align="center"],
+.preview-area td[align="center"] {
+    text-align: center;
+}
+
+.preview-area th[align="right"],
+.preview-area td[align="right"] {
+    text-align: right;
+}
+
 .preview-area th {
     background-color: var(--color-background-muted);
     font-weight: 650;
