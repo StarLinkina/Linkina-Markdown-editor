@@ -6,7 +6,9 @@ import {
     subscribeToFilePersistence
 } from "../../services/filePersistence.js";
 
-import { markdownFiles, currentFileId } from "../../state.js";
+import { markdownFiles, currentFileId, fileLoadResult } from "../../state.js";
+import { initializeWelcomeFile } from "../../services/welcomeFile.js";
+import welcomeContent from "../../content/welcome.md?raw";
 import { createFileArea } from "../FileArea";
 import { createDocumentArea } from "../DocumentArea";
 import { createExtendArea } from "../ExtendArea";
@@ -64,6 +66,12 @@ export function createWorkspace() {
         documentArea: documentArea.element,
         extendArea
     });
+
+    const welcomeFile = initializeWelcomeFile(fileLoadResult, welcomeContent);
+    if (welcomeFile) {
+        handleFileSelect(welcomeFile);
+        documentArea.setMode("preview");
+    }
 
     return workspaceElement;
 }
